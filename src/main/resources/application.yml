@@ -24,3 +24,9 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+
+jwt:
+  secret:
+    key: ${JWT_SECRET}
+  accessExpire: 1800000
+  refreshExpire: 604800000
