@@ -1,7 +1,9 @@
 package com.community.domain.auth.controller;
 
 import com.community.common.dto.BaseResponse;
+import com.community.domain.auth.dto.request.AuthLoginRequest;
 import com.community.domain.auth.dto.request.AuthSignupRequest;
+import com.community.domain.auth.dto.response.AuthLoginResponse;
 import com.community.domain.auth.dto.response.AuthSignupResponse;
 import com.community.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -25,5 +27,12 @@ public class AuthController {
     public ResponseEntity<BaseResponse<AuthSignupResponse>> signup(@Valid @RequestBody AuthSignupRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
                 HttpStatus.CREATED.name(), "회원가입했습니다", authService.signup(request)));
+    }
+
+    // 로그인
+    @PostMapping("/login")
+    public ResponseEntity<BaseResponse<AuthLoginResponse>> login(@Valid @RequestBody AuthLoginRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "로그인했습니다", authService.login(request)));
     }
 }
