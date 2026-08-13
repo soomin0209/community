@@ -16,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +66,7 @@ public class AuthService {
         redisTemplate.opsForValue().set(
                 REFRESH_TOKEN_PREFIX + user.getId(),
                 refreshToken,
-                refreshTokenExpireTime,
-                TimeUnit.MILLISECONDS
+                Duration.ofMillis(refreshTokenExpireTime)
         );
 
         return new AuthLoginResponse(accessToken, refreshToken);
@@ -97,8 +96,7 @@ public class AuthService {
         redisTemplate.opsForValue().set(
                 REFRESH_TOKEN_PREFIX + userId,
                 newRefreshToken,
-                refreshTokenExpireTime,
-                TimeUnit.MILLISECONDS
+                Duration.ofMillis(refreshTokenExpireTime)
         );
 
         return new AuthLoginResponse(newAccessToken, newRefreshToken);
