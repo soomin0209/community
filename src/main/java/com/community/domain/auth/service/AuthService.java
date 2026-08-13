@@ -72,4 +72,35 @@ public class AuthService {
 
         return new AuthLoginResponse(accessToken, refreshToken);
     }
+
+    // 토큰 재발급
+    public AuthLoginResponse reissue(String refreshToken) {
+        if (!jwtProvider.validateRefreshToken(refreshToken)) {
+            throw new ServiceErrorException(AuthExceptionEnum.INVALID_REFRESH_TOKEN);
+        }
+
+        Long userId = jwtProvider.getUserId(refreshToken);
+        String oldRefreshToken = (String) redisTemplate.opsForValue()
+                .get(REFRESH_TOKEN_PREFIX + userId);
+
+        if (oldRefreshToken == null) {
+            throw new ServiceErrorException(AuthExceptionEnum.REFRESH_TOKEN_EXPIRED);
+        }
+
+        if (!refreshToken.equals(oldRefreshToken)) {
+            throw new ServiceErrorException(AuthExceptionEnum.INVALID_REFRESH_TOKEN);
+        }
+
+        String newAccessToken = jwtProvider.createAccessToken(userId);
+        String newRefreshToken = jwtProvider.createRefreshToken(userId);
+
+        redisTemplate.opsForValue().set(
+                REFRESH_TOKEN_PREFIX + userId,
+                newRefreshToken,
+                refreshTokenExpireTime,
+                TimeUnit.MILLISECONDS
+        );
+
+        return new AuthLoginResponse(newAccessToken, newRefreshToken);
+    }
 }
