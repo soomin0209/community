@@ -8,6 +8,7 @@ import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.dto.request.AuthSignupRequest;
 import com.community.domain.auth.dto.response.AuthSignupResponse;
 import com.community.domain.user.entity.User;
+import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,19 +83,18 @@ public class AuthService {
         String oldRefreshToken = (String) redisTemplate.opsForValue()
                 .get(REFRESH_TOKEN_PREFIX + userId);
 
-        if (oldRefreshToken == null) {
-            throw new ServiceErrorException(AuthExceptionEnum.REFRESH_TOKEN_EXPIRED);
-        }
-
-        if (!refreshToken.equals(oldRefreshToken)) {
+        if (oldRefreshToken == null || !oldRefreshToken.equals(refreshToken)) {
             throw new ServiceErrorException(AuthExceptionEnum.INVALID_REFRESH_TOKEN);
         }
 
-        String newAccessToken = jwtProvider.createAccessToken(userId);
-        String newRefreshToken = jwtProvider.createRefreshToken(userId);
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        String newAccessToken = jwtProvider.createAccessToken(user.getId());
+        String newRefreshToken = jwtProvider.createRefreshToken(user.getId());
 
         redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + userId,
+                REFRESH_TOKEN_PREFIX + user.getId(),
                 newRefreshToken,
                 Duration.ofMillis(refreshTokenExpireTime)
         );
