@@ -30,6 +30,7 @@ public class AuthService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh:";
+    private static final String BLACKLIST_PREFIX = "blacklist:";
 
     @Value("${jwt.refreshExpire}")
     private long refreshTokenExpireTime;
@@ -100,5 +101,17 @@ public class AuthService {
         );
 
         return new AuthLoginResponse(newAccessToken, newRefreshToken);
+    }
+
+    // 로그아웃
+    public void logout(Long userId, String accessToken) {
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+
+        long ttl = jwtProvider.getRemainingTtl(accessToken);
+        redisTemplate.opsForValue().set(
+                BLACKLIST_PREFIX + accessToken,
+                "logout",
+                Duration.ofMillis(ttl)
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.community.domain.auth.controller;
 
+import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.auth.dto.request.AuthLoginRequest;
@@ -9,11 +10,13 @@ import com.community.domain.auth.dto.response.AuthSignupResponse;
 import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -72,5 +75,24 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), "토큰을 갱신했습니다", new AuthLoginResponse(reissueResponse.accessToken(), null)));
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<BaseResponse<Void>> logout(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        String accessToken = (String) request.getAttribute("accessToken");
+        authService.logout(userDetails.getUserId(), accessToken);
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);    // 즉시 만료
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK.name(), "로그아웃했습니다", null));
     }
 }
