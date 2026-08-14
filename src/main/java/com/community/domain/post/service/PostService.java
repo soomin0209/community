@@ -3,7 +3,9 @@ package com.community.domain.post.service;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.response.PostCreateResponse;
+import com.community.domain.post.dto.response.PostGetOneResponse;
 import com.community.domain.post.entity.Post;
+import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
@@ -35,6 +37,24 @@ public class PostService {
                 post.getContent(),
                 user.getNickname(),
                 post.getCreatedAt()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PostGetOneResponse getOne(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
+                () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+        User user = userRepository.findById(post.getUserId()).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        return new PostGetOneResponse(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                user.getNickname(),
+                post.getCreatedAt(),
+                post.getUpdatedAt()
         );
     }
 }
