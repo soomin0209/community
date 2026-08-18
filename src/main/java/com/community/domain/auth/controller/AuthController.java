@@ -93,6 +93,7 @@ public class AuthController {
         cookie.setMaxAge(0);    // 즉시 만료
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK.name(), "로그아웃했습니다", null));
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "로그아웃했습니다", null));
     }
 }
