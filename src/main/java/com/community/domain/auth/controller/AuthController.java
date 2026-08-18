@@ -84,8 +84,9 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
+        Long userId = userDetails.getUserId();
         String accessToken = (String) request.getAttribute("accessToken");
-        authService.logout(userDetails.getUserId(), accessToken);
+        authService.logout(userId, accessToken);
 
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
