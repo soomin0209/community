@@ -1,6 +1,9 @@
 package com.community.domain.post.entity;
 
 import com.community.common.entity.BaseEntity;
+import com.community.common.exception.ServiceErrorException;
+import com.community.domain.post.dto.request.PostUpdateRequest;
+import com.community.domain.post.exception.PostExceptionEnum;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,5 +39,13 @@ public class Post extends BaseEntity {
         post.content = content;
 
         return post;
+    }
+
+    public void update(PostUpdateRequest request) {
+        if (request.title() == null && request.content() == null) {
+            throw new ServiceErrorException(PostExceptionEnum.POST_UPDATE_NO_CONTENT);
+        }
+        if (request.title() != null) this.title = request.title();
+        if (request.content() != null) this.content = request.content();
     }
 }

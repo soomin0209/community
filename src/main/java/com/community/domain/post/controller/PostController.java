@@ -5,9 +5,11 @@ import com.community.common.dto.BaseResponse;
 import com.community.common.dto.PageResponse;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
+import com.community.domain.post.dto.request.PostUpdateRequest;
 import com.community.domain.post.dto.response.PostCreateResponse;
 import com.community.domain.post.dto.response.PostGetAllResponse;
 import com.community.domain.post.dto.response.PostGetOneResponse;
+import com.community.domain.post.dto.response.PostUpdateResponse;
 import com.community.domain.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,5 +50,17 @@ public class PostController {
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), "게시물 목록을 조회하였습니다", postService.getAll(condition)));
+    }
+
+    // 게시물 수정
+    @PatchMapping("/{postId}")
+    public ResponseEntity<BaseResponse<PostUpdateResponse>> update(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long postId,
+            @Valid @RequestBody PostUpdateRequest request
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "게시물을 수정하였습니다", postService.update(userId, postId, request)));
     }
 }

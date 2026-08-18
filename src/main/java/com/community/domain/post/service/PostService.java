@@ -4,9 +4,11 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
+import com.community.domain.post.dto.request.PostUpdateRequest;
 import com.community.domain.post.dto.response.PostCreateResponse;
 import com.community.domain.post.dto.response.PostGetAllResponse;
 import com.community.domain.post.dto.response.PostGetOneResponse;
+import com.community.domain.post.dto.response.PostUpdateResponse;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
@@ -72,5 +74,29 @@ public class PostService {
         );
 
         return PageResponse.from(page);
+    }
+
+    // 게시물 수정
+    public PostUpdateResponse update(Long userId, Long postId, PostUpdateRequest request) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
+                () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+        if (!post.getUserId().equals(user.getId())) {
+            throw new ServiceErrorException(PostExceptionEnum.POST_FORBIDDEN);
+        }
+
+        post.update(request);
+
+        return new PostUpdateResponse(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                user.getNickname(),
+                post.getCreatedAt(),
+                post.getUpdatedAt()
+        );
     }
 }
