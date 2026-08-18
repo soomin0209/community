@@ -1,8 +1,11 @@
 package com.community.domain.post.service;
 
+import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.post.dto.request.PostCreateRequest;
+import com.community.domain.post.dto.request.PostPageCondition;
 import com.community.domain.post.dto.response.PostCreateResponse;
+import com.community.domain.post.dto.response.PostGetAllResponse;
 import com.community.domain.post.dto.response.PostGetOneResponse;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
@@ -11,10 +14,10 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
@@ -40,6 +44,7 @@ public class PostService {
         );
     }
 
+    // 게시물 단건 조회
     @Transactional(readOnly = true)
     public PostGetOneResponse getOne(Long postId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
@@ -56,5 +61,16 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );
+    }
+
+    // 게시물 목록 조회
+    @Transactional(readOnly = true)
+    public PageResponse<PostGetAllResponse> getAll(PostPageCondition condition) {
+        Page<PostGetAllResponse> page = postRepository.findPostsWithCondition(
+                PageRequest.of(condition.getPage(), condition.getSize()),
+                condition.getSortType()
+        );
+
+        return PageResponse.from(page);
     }
 }

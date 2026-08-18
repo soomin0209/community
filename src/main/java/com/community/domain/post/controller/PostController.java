@@ -2,8 +2,11 @@ package com.community.domain.post.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
+import com.community.common.dto.PageResponse;
 import com.community.domain.post.dto.request.PostCreateRequest;
+import com.community.domain.post.dto.request.PostPageCondition;
 import com.community.domain.post.dto.response.PostCreateResponse;
+import com.community.domain.post.dto.response.PostGetAllResponse;
 import com.community.domain.post.dto.response.PostGetOneResponse;
 import com.community.domain.post.service.PostService;
 import jakarta.validation.Valid;
@@ -36,5 +39,14 @@ public class PostController {
     public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(@PathVariable Long postId) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), "게시물을 조회하였습니다", postService.getOne(postId)));
+    }
+
+    // 게시물 목록 조회
+    @GetMapping
+    public ResponseEntity<BaseResponse<PageResponse<PostGetAllResponse>>> getAll(
+            @Valid @ModelAttribute PostPageCondition condition
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "게시물 목록을 조회하였습니다", postService.getAll(condition)));
     }
 }
