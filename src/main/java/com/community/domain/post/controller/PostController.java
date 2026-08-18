@@ -63,4 +63,16 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), "게시물을 수정하였습니다", postService.update(userId, postId, request)));
     }
+
+    // 게시물 삭제
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<BaseResponse<Void>> delete(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long postId
+    ) {
+        Long userId = userDetails.getUserId();
+        postService.delete(userId, postId);
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "게시물을 삭제하였습니다", null));
+    }
 }

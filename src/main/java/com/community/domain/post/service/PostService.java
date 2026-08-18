@@ -99,4 +99,19 @@ public class PostService {
                 post.getUpdatedAt()
         );
     }
+
+    // 게시물 삭제
+    public void delete(Long userId, Long postId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
+                () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+        if (!post.getUserId().equals(user.getId())) {
+            throw new ServiceErrorException(PostExceptionEnum.POST_FORBIDDEN);
+        }
+
+        post.delete();
+    }
 }
