@@ -1,5 +1,6 @@
 package com.community.domain.auth.controller;
 
+import com.community.common.annotation.Idempotent;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.exception.ServiceErrorException;
@@ -27,6 +28,7 @@ public class AuthController {
     private final AuthService authService;
 
     // 회원가입
+    @Idempotent
     @PostMapping("/signup")
     public ResponseEntity<BaseResponse<AuthSignupResponse>> signup(@Valid @RequestBody AuthSignupRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(

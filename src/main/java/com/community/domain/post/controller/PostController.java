@@ -1,5 +1,6 @@
 package com.community.domain.post.controller;
 
+import com.community.common.annotation.Idempotent;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.dto.PageResponse;
@@ -26,6 +27,7 @@ public class PostController {
     private final PostService postService;
 
     // 게시물 등록
+    @Idempotent
     @PostMapping
     public ResponseEntity<BaseResponse<PostCreateResponse>> create(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -53,6 +55,7 @@ public class PostController {
     }
 
     // 게시물 수정
+    @Idempotent
     @PatchMapping("/{postId}")
     public ResponseEntity<BaseResponse<PostUpdateResponse>> update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
