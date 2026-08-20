@@ -3,9 +3,11 @@ package com.community.domain.user.controller;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
+import com.community.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.community.domain.user.dto.response.UserGetMineResponse;
 import com.community.domain.user.dto.response.UserGetOneResponse;
 import com.community.domain.user.dto.response.UserUpdateNicknameResponse;
+import com.community.domain.user.dto.response.UserUpdatePasswordResponse;
 import com.community.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +49,16 @@ public class UserController {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), "닉네임을 변경하였습니다", userService.updateNickname(userId, request)));
+    }
+
+    // 비밀번호 변경
+    @PatchMapping("/password")
+    public ResponseEntity<BaseResponse<UserUpdatePasswordResponse>> updatePassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody UserUpdatePasswordRequest request
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "비밀번호를 변경하였습니다", userService.updatePassword(userId, request)));
     }
 }
