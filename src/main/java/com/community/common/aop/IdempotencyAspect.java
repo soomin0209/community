@@ -34,8 +34,13 @@ public class IdempotencyAspect {
 
         String redisKey = "idempotency:" + key;
 
-        Boolean isFirstRequest = redisTemplate.opsForValue()
-                .setIfAbsent(redisKey, "PROCESSING", Duration.ofSeconds(idempotent.expireTime()));
+        Boolean isFirstRequest;
+        try {
+            isFirstRequest = redisTemplate.opsForValue()
+                    .setIfAbsent(redisKey, "PROCESSING", Duration.ofSeconds(idempotent.expireTime()));
+        } catch (Exception e) {
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
 
         if (Boolean.FALSE.equals(isFirstRequest)) {
             throw new ServiceErrorException(CommonExceptionEnum.DUPLICATE_REQUEST);
@@ -44,7 +49,11 @@ public class IdempotencyAspect {
         try {
             return joinPoint.proceed();
         } catch (Exception e) {
-            redisTemplate.delete(redisKey);
+            try {
+                redisTemplate.delete(redisKey);
+            } catch (Exception re) {
+                // delete 실패해도 TTL로 자동 만료
+            }
             throw e;
         }
     }
