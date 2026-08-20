@@ -7,5 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface PostCustomRepository {
-    Page<PostGetAllResponse> findPostsWithCondition(Pageable pageable, PostSortType sortType, String keyword, PostSearchType searchType);
+    Page<PostGetAllResponse> findPostsWithCondition(
+            Pageable pageable,
+            PostSortType sortType,
+            String keyword,
+            PostSearchType searchType,
+            Long userId
+    );
 }

@@ -27,7 +27,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
             Pageable pageable,
             PostSortType sortType,
             String keyword,
-            PostSearchType searchType
+            PostSearchType searchType,
+            Long userId
     ) {
         List<PostGetAllResponse> list = queryFactory
                 .select(Projections.constructor(PostGetAllResponse.class,
@@ -39,7 +40,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .join(user).on(post.userId.eq(user.id))
                 .where(
                         post.deletedAt.isNull(),
-                        searchCondition(keyword, searchType)
+                        searchCondition(keyword, searchType),
+                        userIdCondition(userId)
                 )
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
@@ -52,7 +54,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .join(user).on(post.userId.eq(user.id))
                 .where(
                         post.deletedAt.isNull(),
-                        searchCondition(keyword, searchType)
+                        searchCondition(keyword, searchType),
+                        userIdCondition(userId)
                 )
                 .fetchOne();
 
@@ -80,5 +83,9 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
             case TITLE_CONTENT -> post.title.containsIgnoreCase(keyword)
                     .or(post.content.containsIgnoreCase(keyword));
         };
+    }
+
+    private BooleanExpression userIdCondition(Long userId) {
+        return userId != null ? post.userId.eq(userId) : null;
     }
 }
