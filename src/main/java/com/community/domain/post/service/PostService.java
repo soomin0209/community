@@ -70,7 +70,9 @@ public class PostService {
     public PageResponse<PostGetAllResponse> getAll(PostPageCondition condition) {
         Page<PostGetAllResponse> page = postRepository.findPostsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
-                condition.getSortType()
+                condition.getSortType(),
+                condition.getKeyword(),
+                condition.getSearchType()
         );
 
         return PageResponse.from(page);

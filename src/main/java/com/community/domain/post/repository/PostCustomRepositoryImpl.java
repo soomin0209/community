@@ -1,9 +1,11 @@
 package com.community.domain.post.repository;
 
 import com.community.domain.post.dto.response.PostGetAllResponse;
+import com.community.domain.post.enums.PostSearchType;
 import com.community.domain.post.enums.PostSortType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +23,12 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<PostGetAllResponse> findPostsWithCondition(Pageable pageable, PostSortType sortType) {
+    public Page<PostGetAllResponse> findPostsWithCondition(
+            Pageable pageable,
+            PostSortType sortType,
+            String keyword,
+            PostSearchType searchType
+    ) {
         List<PostGetAllResponse> list = queryFactory
                 .select(Projections.constructor(PostGetAllResponse.class,
                         post.id,
@@ -31,7 +38,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
                 .where(
-                        post.deletedAt.isNull()
+                        post.deletedAt.isNull(),
+                        searchCondition(keyword, searchType)
                 )
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
@@ -41,8 +49,10 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         Long total = queryFactory
                 .select(post.count())
                 .from(post)
+                .join(user).on(post.userId.eq(user.id))
                 .where(
-                        post.deletedAt.isNull()
+                        post.deletedAt.isNull(),
+                        searchCondition(keyword, searchType)
                 )
                 .fetchOne();
 
@@ -55,6 +65,20 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         return switch (sortType) {
             case LATEST -> post.createdAt.desc();
             case OLDEST -> post.createdAt.asc();
+        };
+    }
+
+    private BooleanExpression searchCondition(String keyword, PostSearchType searchType) {
+        if (keyword == null || keyword.isBlank()) {
+            return null;
+        }
+
+        return switch (searchType) {
+            case AUTHOR -> user.nickname.containsIgnoreCase(keyword);
+            case TITLE -> post.title.containsIgnoreCase(keyword);
+            case CONTENT -> post.content.containsIgnoreCase(keyword);
+            case TITLE_CONTENT -> post.title.containsIgnoreCase(keyword)
+                    .or(post.content.containsIgnoreCase(keyword));
         };
     }
 }
