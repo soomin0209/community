@@ -1,12 +1,13 @@
 package com.community.common.config.security;
 
+import com.community.common.exception.CommonExceptionEnum;
+import com.community.common.exception.ServiceErrorException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 blacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
             } catch (Exception e) {
-                log.error("[JwtAuthenticationFilter] Redis blacklist 확인 실패 — msg={}", e.getMessage());
+                log.error("[JwtAuthenticationFilter] Redis blacklist 확인 실패 - msg={}", e.getMessage());
+                throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
             }
         }
 
@@ -49,13 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            MDC.put("userId", String.valueOf(userId));
         }
 
-        try {
-            filterChain.doFilter(request, response);
-        } finally {
-            MDC.remove("userId");
-        }
+        filterChain.doFilter(request, response);
     }
 }

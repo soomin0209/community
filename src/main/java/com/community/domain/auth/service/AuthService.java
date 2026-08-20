@@ -1,6 +1,7 @@
 package com.community.domain.auth.service;
 
 import com.community.common.config.security.JwtProvider;
+import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.auth.dto.request.AuthLoginRequest;
 import com.community.domain.auth.dto.response.AuthLoginResponse;
@@ -11,6 +12,7 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -65,11 +68,16 @@ public class AuthService {
         String accessToken = jwtProvider.createAccessToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getId(),
-                refreshToken,
-                Duration.ofMillis(refreshTokenExpireTime)
-        );
+        try {
+            redisTemplate.opsForValue().set(
+                    REFRESH_TOKEN_PREFIX + user.getId(),
+                    refreshToken,
+                    Duration.ofMillis(refreshTokenExpireTime)
+            );
+        } catch (Exception e) {
+            log.error("[AuthService] Redis Refresh Token 저장 실패 - userId={}, msg={}", user.getId(), e.getMessage());
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
 
         return new AuthLoginResponse(accessToken, refreshToken);
     }
@@ -81,8 +89,14 @@ public class AuthService {
         }
 
         Long userId = jwtProvider.getUserId(refreshToken);
-        String oldRefreshToken = (String) redisTemplate.opsForValue()
-                .get(REFRESH_TOKEN_PREFIX + userId);
+        String oldRefreshToken;
+        try {
+            oldRefreshToken = (String) redisTemplate.opsForValue()
+                    .get(REFRESH_TOKEN_PREFIX + userId);
+        } catch (Exception e) {
+            log.error("[AuthService] Redis Refresh Token 조회 실패 - userId={}, msg={}", userId, e.getMessage());
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
 
         if (oldRefreshToken == null || !oldRefreshToken.equals(refreshToken)) {
             throw new ServiceErrorException(AuthExceptionEnum.INVALID_REFRESH_TOKEN);
@@ -94,24 +108,33 @@ public class AuthService {
         String newAccessToken = jwtProvider.createAccessToken(user.getId());
         String newRefreshToken = jwtProvider.createRefreshToken(user.getId());
 
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getId(),
-                newRefreshToken,
-                Duration.ofMillis(refreshTokenExpireTime)
-        );
+        try {
+            redisTemplate.opsForValue().set(
+                    REFRESH_TOKEN_PREFIX + user.getId(),
+                    newRefreshToken,
+                    Duration.ofMillis(refreshTokenExpireTime)
+            );
+        } catch (Exception e) {
+            log.error("[AuthService] Redis Refresh Token 갱신 실패 - userId={}, msg={}", user.getId(), e.getMessage());
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
 
         return new AuthLoginResponse(newAccessToken, newRefreshToken);
     }
 
     // 로그아웃
     public void logout(Long userId, String accessToken) {
-        redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
-
         long ttl = jwtProvider.getRemainingTtl(accessToken);
-        redisTemplate.opsForValue().set(
-                BLACKLIST_PREFIX + accessToken,
-                "logout",
-                Duration.ofMillis(ttl)
-        );
+        try {
+            redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_PREFIX + accessToken,
+                    "logout",
+                    Duration.ofMillis(ttl)
+            );
+        } catch (Exception e) {
+            log.error("[AuthService] Redis Logout 처리 실패 - userId={}, msg={}", userId, e.getMessage());
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
     }
 }

@@ -24,7 +24,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        log.warn("[CustomAccessDeniedHandler] 권한 없는 접근 — method={}, uri={}", request.getMethod(), request.getRequestURI()); // 인증된 유저의 권한 외 엔드포인트 접근 감지용
+        log.warn("[CustomAccessDeniedHandler] 권한 없는 접근 - method={}, uri={}", request.getMethod(), request.getRequestURI()); // 인증된 유저의 권한 외 엔드포인트 접근 감지용
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");

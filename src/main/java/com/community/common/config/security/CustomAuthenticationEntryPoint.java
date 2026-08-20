@@ -24,7 +24,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        log.warn("[CustomAuthenticationEntryPoint] 미인증 접근 — method={}, uri={}", request.getMethod(), request.getRequestURI()); // 로그인 없이 인증 필요 엔드포인트 접근 감지용
+        log.warn("[CustomAuthenticationEntryPoint] 미인증 접근 - method={}, uri={}", request.getMethod(), request.getRequestURI()); // 로그인 없이 인증 필요 엔드포인트 접근 감지용
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
