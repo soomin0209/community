@@ -1,5 +1,7 @@
 package com.community.common.config.security;
 
+import com.community.common.exception.CommonExceptionEnum;
+import com.community.common.exception.ServiceErrorException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 blacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
             } catch (Exception e) {
                 log.error("[JwtAuthenticationFilter] Redis blacklist 확인 실패 — msg={}", e.getMessage());
+                throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
             }
         }
 
