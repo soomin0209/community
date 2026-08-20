@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRepository {
     Optional<Post> findByIdAndDeletedAtIsNull(Long id);
+
+    Long countByUserIdAndDeletedAtIsNull(Long userId);
 }

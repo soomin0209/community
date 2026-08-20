@@ -1,14 +1,91 @@
 package com.community.domain.user.controller;
 
+import com.community.common.config.security.CustomUserDetails;
+import com.community.common.dto.BaseResponse;
+import com.community.domain.auth.service.AuthService;
+import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
+import com.community.domain.user.dto.request.UserUpdatePasswordRequest;
+import com.community.domain.user.dto.response.UserGetMineResponse;
+import com.community.domain.user.dto.response.UserGetOneResponse;
+import com.community.domain.user.dto.response.UserUpdateNicknameResponse;
+import com.community.domain.user.dto.response.UserUpdatePasswordResponse;
 import com.community.domain.user.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
+    private final AuthService authService;
+
+    // 프로필 조회
+    @GetMapping("/{userId}")
+    public ResponseEntity<BaseResponse<UserGetOneResponse>> getOne(@PathVariable Long userId) {
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "프로필을 조회하였습니다", userService.getOne(userId)));
+    }
+
+    // 마이페이지 조회
+    @GetMapping("/me")
+    public ResponseEntity<BaseResponse<UserGetMineResponse>> getMine(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "마이페이지를 조회하였습니다", userService.getMine(userId)));
+    }
+
+    // 닉네임 변경
+    @PatchMapping("/nickname")
+    public ResponseEntity<BaseResponse<UserUpdateNicknameResponse>> updateNickname(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody UserUpdateNicknameRequest request
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "닉네임을 변경하였습니다", userService.updateNickname(userId, request)));
+    }
+
+    // 비밀번호 변경
+    @PatchMapping("/password")
+    public ResponseEntity<BaseResponse<UserUpdatePasswordResponse>> updatePassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody UserUpdatePasswordRequest request
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "비밀번호를 변경하였습니다", userService.updatePassword(userId, request)));
+    }
+
+    // 회원 탈퇴
+    @DeleteMapping("/me")
+    public ResponseEntity<BaseResponse<Void>> withdraw(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        Long userId = userDetails.getUserId();
+        String accessToken = (String) request.getAttribute("accessToken");
+        userService.withdraw(userId);
+        authService.logout(userId, accessToken);
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);    // 즉시 만료
+        response.addCookie(cookie);
+
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "회원 탈퇴가 완료되었습니다", null));
+    }
 }
