@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +27,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${cookie.secure}")
+    private boolean cookieSecure;
 
     // 회원가입
     @Idempotent
@@ -45,7 +49,7 @@ public class AuthController {
 
         Cookie cookie = new Cookie("refreshToken", loginResponse.refreshToken());
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);    // 로컬 테스트를 위해 false로 설정 -> 배포 환경에서는 true로 변경 !!
+        cookie.setSecure(cookieSecure);
         cookie.setPath("/");
         cookie.setMaxAge(604800);
         cookie.setAttribute("SameSite", "Strict");
@@ -69,7 +73,7 @@ public class AuthController {
 
         Cookie newCookie = new Cookie("refreshToken", reissueResponse.refreshToken());
         newCookie.setHttpOnly(true);
-        newCookie.setSecure(false);
+        newCookie.setSecure(cookieSecure);
         newCookie.setPath("/");
         newCookie.setMaxAge(604800);
         newCookie.setAttribute("SameSite", "Strict");
