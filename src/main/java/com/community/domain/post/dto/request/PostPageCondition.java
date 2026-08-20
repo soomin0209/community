@@ -1,5 +1,6 @@
 package com.community.domain.post.dto.request;
 
+import com.community.domain.post.enums.PostSearchType;
 import com.community.domain.post.enums.PostSortType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Positive;
@@ -18,4 +19,8 @@ public class PostPageCondition {
     private int size = 20;
 
     private PostSortType sortType = PostSortType.LATEST;
+
+    private String keyword;
+
+    private PostSearchType searchType = PostSearchType.TITLE_CONTENT;
 }

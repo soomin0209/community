@@ -15,6 +15,7 @@ import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,7 +71,24 @@ public class PostService {
     public PageResponse<PostGetAllResponse> getAll(PostPageCondition condition) {
         Page<PostGetAllResponse> page = postRepository.findPostsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
-                condition.getSortType()
+                condition.getSortType(),
+                condition.getKeyword(),
+                condition.getSearchType(),
+                null
+        );
+
+        return PageResponse.from(page);
+    }
+
+    // 내 게시물 목록 조회
+    @Transactional(readOnly = true)
+    public PageResponse<PostGetAllResponse> getMine(Long userId, PostPageCondition condition) {
+        Page<PostGetAllResponse> page = postRepository.findPostsWithCondition(
+                PageRequest.of(condition.getPage(), condition.getSize()),
+                condition.getSortType(),
+                condition.getKeyword(),
+                condition.getSearchType(),
+                userId
         );
 
         return PageResponse.from(page);

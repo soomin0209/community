@@ -54,6 +54,17 @@ public class PostController {
                 HttpStatus.OK.name(), "게시물 목록을 조회하였습니다", postService.getAll(condition)));
     }
 
+    // 내 게시물 목록 조회
+    @GetMapping("/my")
+    public ResponseEntity<BaseResponse<PageResponse<PostGetAllResponse>>> getMine(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @ModelAttribute PostPageCondition condition
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "내 게시물 목록을 조회하였습니다", postService.getMine(userId, condition)));
+    }
+
     // 게시물 수정
     @Idempotent
     @PatchMapping("/{postId}")
