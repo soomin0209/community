@@ -12,6 +12,7 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -73,9 +75,9 @@ public class AuthService {
                     Duration.ofMillis(refreshTokenExpireTime)
             );
         } catch (Exception e) {
+            log.error("[AuthService] Redis Refresh Token 저장 실패 - userId={}, msg={}", user.getId(), e.getMessage());
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
-
 
         return new AuthLoginResponse(accessToken, refreshToken);
     }
@@ -92,6 +94,7 @@ public class AuthService {
             oldRefreshToken = (String) redisTemplate.opsForValue()
                     .get(REFRESH_TOKEN_PREFIX + userId);
         } catch (Exception e) {
+            log.error("[AuthService] Redis Refresh Token 조회 실패 - userId={}, msg={}", userId, e.getMessage());
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
 
@@ -112,9 +115,9 @@ public class AuthService {
                     Duration.ofMillis(refreshTokenExpireTime)
             );
         } catch (Exception e) {
+            log.error("[AuthService] Redis Refresh Token 갱신 실패 - userId={}, msg={}", user.getId(), e.getMessage());
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
-
 
         return new AuthLoginResponse(newAccessToken, newRefreshToken);
     }
@@ -130,6 +133,7 @@ public class AuthService {
                     Duration.ofMillis(ttl)
             );
         } catch (Exception e) {
+            log.error("[AuthService] Redis Logout 처리 실패 - userId={}, msg={}", userId, e.getMessage());
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
     }
