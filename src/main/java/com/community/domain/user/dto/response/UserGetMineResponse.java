@@ -6,6 +6,6 @@ public record UserGetMineResponse(
         Long userId,
         String loginId,
         String nickname,
-        LocalDateTime createdAt
-) {
-}
+        LocalDateTime createdAt,
+        Long postCount
+) {}

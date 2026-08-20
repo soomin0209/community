@@ -2,6 +2,7 @@ package com.community.domain.user.service;
 
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.auth.exception.AuthExceptionEnum;
+import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
 import com.community.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.community.domain.user.dto.response.UserGetMineResponse;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
 
     // 프로필 조회
@@ -30,10 +32,13 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
+        Long postCount = postRepository.countByUserIdAndDeletedAtIsNull(userId);
+
         return new UserGetOneResponse(
                 user.getId(),
                 user.getNickname(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                postCount
         );
     }
 
@@ -43,11 +48,14 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
+        Long postCount = postRepository.countByUserIdAndDeletedAtIsNull(userId);
+
         return new UserGetMineResponse(
                 user.getId(),
                 user.getLoginId(),
                 user.getNickname(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                postCount
         );
     }
 
@@ -95,5 +103,12 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
+    }
+
+    public void withdraw(Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        user.delete();
     }
 }

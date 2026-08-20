@@ -5,5 +5,6 @@ import java.time.LocalDateTime;
 public record UserGetOneResponse(
         Long userId,
         String nickname,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Long postCount
 ) {}
