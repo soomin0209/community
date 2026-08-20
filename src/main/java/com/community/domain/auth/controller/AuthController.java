@@ -1,5 +1,6 @@
 package com.community.domain.auth.controller;
 
+import com.community.common.annotation.Idempotent;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.exception.ServiceErrorException;
@@ -27,6 +28,7 @@ public class AuthController {
     private final AuthService authService;
 
     // 회원가입
+    @Idempotent
     @PostMapping("/signup")
     public ResponseEntity<BaseResponse<AuthSignupResponse>> signup(@Valid @RequestBody AuthSignupRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
@@ -84,8 +86,9 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
+        Long userId = userDetails.getUserId();
         String accessToken = (String) request.getAttribute("accessToken");
-        authService.logout(userDetails.getUserId(), accessToken);
+        authService.logout(userId, accessToken);
 
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
@@ -93,6 +96,7 @@ public class AuthController {
         cookie.setMaxAge(0);    // 즉시 만료
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK.name(), "로그아웃했습니다", null));
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "로그아웃했습니다", null));
     }
 }
