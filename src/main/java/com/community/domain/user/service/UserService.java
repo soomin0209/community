@@ -105,6 +105,7 @@ public class UserService {
         );
     }
 
+    // 회원 탈퇴
     public void withdraw(Long userId) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
