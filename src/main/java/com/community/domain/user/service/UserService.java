@@ -1,8 +1,11 @@
 package com.community.domain.user.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.auth.exception.AuthExceptionEnum;
+import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
 import com.community.domain.user.dto.response.UserGetMineResponse;
 import com.community.domain.user.dto.response.UserGetOneResponse;
+import com.community.domain.user.dto.response.UserUpdateNicknameResponse;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
@@ -41,6 +44,29 @@ public class UserService {
                 user.getLoginId(),
                 user.getNickname(),
                 user.getCreatedAt()
+        );
+    }
+
+    // 닉네임 변경
+    public UserUpdateNicknameResponse updateNickname(Long userId, UserUpdateNicknameRequest request) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        if (user.getNickname().equals(request.nickname())) {
+            throw new ServiceErrorException(UserExceptionEnum.NICKNAME_UNCHANGED);
+        }
+
+        if (userRepository.existsByNickname(request.nickname())) {
+            throw new ServiceErrorException(AuthExceptionEnum.DUPLICATED_NICKNAME);
+        }
+
+        user.update(request.nickname());
+
+        return new UserUpdateNicknameResponse(
+                user.getId(),
+                user.getNickname(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
     }
 }

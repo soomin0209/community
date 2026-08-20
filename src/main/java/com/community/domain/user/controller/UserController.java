@@ -2,17 +2,17 @@ package com.community.domain.user.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
+import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
 import com.community.domain.user.dto.response.UserGetMineResponse;
 import com.community.domain.user.dto.response.UserGetOneResponse;
+import com.community.domain.user.dto.response.UserUpdateNicknameResponse;
 import com.community.domain.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,5 +36,16 @@ public class UserController {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), "마이페이지를 조회하였습니다", userService.getMine(userId)));
+    }
+
+    // 닉네임 변경
+    @PatchMapping("/nickname")
+    public ResponseEntity<BaseResponse<UserUpdateNicknameResponse>> updateNickname(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody UserUpdateNicknameRequest request
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), "닉네임을 변경하였습니다", userService.updateNickname(userId, request)));
     }
 }
