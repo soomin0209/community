@@ -32,7 +32,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<BaseResponse<UserGetOneResponse>> getOne(@PathVariable Long userId) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "프로필을 조회하였습니다", userService.getOne(userId)));
+                HttpStatus.OK.name(), null, userService.getOne(userId)));
     }
 
     // 마이페이지 조회
@@ -42,7 +42,7 @@ public class UserController {
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "마이페이지를 조회하였습니다", userService.getMine(userId)));
+                HttpStatus.OK.name(), null, userService.getMine(userId)));
     }
 
     // 닉네임 변경
@@ -53,7 +53,7 @@ public class UserController {
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "닉네임을 변경하였습니다", userService.updateNickname(userId, request)));
+                HttpStatus.OK.name(), null, userService.updateNickname(userId, request)));
     }
 
     // 비밀번호 변경
@@ -64,7 +64,7 @@ public class UserController {
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "비밀번호를 변경하였습니다", userService.updatePassword(userId, request)));
+                HttpStatus.OK.name(), null, userService.updatePassword(userId, request)));
     }
 
     // 회원 탈퇴
@@ -86,6 +86,6 @@ public class UserController {
         response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "회원 탈퇴가 완료되었습니다", null));
+                HttpStatus.OK.name(), null, null));
     }
 }

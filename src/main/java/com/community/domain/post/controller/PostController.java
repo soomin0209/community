@@ -35,14 +35,14 @@ public class PostController {
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
-                HttpStatus.CREATED.name(), "게시물이 등록되었습니다", postService.create(userId, request)));
+                HttpStatus.CREATED.name(), null, postService.create(userId, request)));
     }
 
     // 게시물 단건 조회
     @GetMapping("/{postId}")
     public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(@PathVariable Long postId) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "게시물을 조회하였습니다", postService.getOne(postId)));
+                HttpStatus.OK.name(), null, postService.getOne(postId)));
     }
 
     // 게시물 목록 조회
@@ -51,7 +51,7 @@ public class PostController {
             @Valid @ModelAttribute PostPageCondition condition
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "게시물 목록을 조회하였습니다", postService.getAll(condition)));
+                HttpStatus.OK.name(), null, postService.getAll(condition)));
     }
 
     // 내 게시물 목록 조회
@@ -62,7 +62,7 @@ public class PostController {
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "내 게시물 목록을 조회하였습니다", postService.getMine(userId, condition)));
+                HttpStatus.OK.name(), null, postService.getMine(userId, condition)));
     }
 
     // 게시물 수정
@@ -75,7 +75,7 @@ public class PostController {
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "게시물을 수정하였습니다", postService.update(userId, postId, request)));
+                HttpStatus.OK.name(), null, postService.update(userId, postId, request)));
     }
 
     // 게시물 삭제
@@ -87,6 +87,6 @@ public class PostController {
         Long userId = userDetails.getUserId();
         postService.delete(userId, postId);
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "게시물을 삭제하였습니다", null));
+                HttpStatus.OK.name(), null, null));
     }
 }

@@ -36,7 +36,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<BaseResponse<AuthSignupResponse>> signup(@Valid @RequestBody AuthSignupRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
-                HttpStatus.CREATED.name(), "회원가입했습니다", authService.signup(request)));
+                HttpStatus.CREATED.name(), null, authService.signup(request)));
     }
 
     // 로그인
@@ -56,7 +56,7 @@ public class AuthController {
         response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "로그인했습니다", new AuthLoginResponse(loginResponse.accessToken(), null)));
+                HttpStatus.OK.name(), null, new AuthLoginResponse(loginResponse.accessToken(), null)));
     }
 
     // 토큰 재발급
@@ -80,7 +80,7 @@ public class AuthController {
         response.addCookie(newCookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "토큰을 갱신했습니다", new AuthLoginResponse(reissueResponse.accessToken(), null)));
+                HttpStatus.OK.name(), null, new AuthLoginResponse(reissueResponse.accessToken(), null)));
     }
 
     // 로그아웃
@@ -101,6 +101,6 @@ public class AuthController {
         response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), "로그아웃했습니다", null));
+                HttpStatus.OK.name(), null, null));
     }
 }
