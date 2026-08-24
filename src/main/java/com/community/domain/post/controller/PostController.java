@@ -7,11 +7,10 @@ import com.community.common.dto.PageResponse;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
 import com.community.domain.post.dto.request.PostUpdateRequest;
-import com.community.domain.post.dto.response.PostCreateResponse;
-import com.community.domain.post.dto.response.PostGetAllResponse;
-import com.community.domain.post.dto.response.PostGetOneResponse;
-import com.community.domain.post.dto.response.PostUpdateResponse;
+import com.community.domain.post.dto.response.*;
 import com.community.domain.post.service.PostService;
+import com.community.domain.post.service.PostViewService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,12 +18,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController {
 
     private final PostService postService;
+    private final PostViewService postViewService;
 
     // 게시물 등록
     @Idempotent
@@ -40,9 +42,33 @@ public class PostController {
 
     // 게시물 단건 조회
     @GetMapping("/{postId}")
-    public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(@PathVariable Long postId) {
+    public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(
+            @PathVariable Long postId,
+            HttpServletRequest request
+    ) {
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("Proxy-Client-IP");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getRemoteAddr();
+        }
+
+        if (clientIp != null && clientIp.contains(",")) {
+            clientIp = clientIp.split(",")[0].trim();
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, postService.getOne(postId)));
+                HttpStatus.OK.name(), null, postService.getOne(postId, clientIp)));
     }
 
     // 게시물 목록 조회
@@ -63,6 +89,13 @@ public class PostController {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, postService.getMine(userId, condition)));
+    }
+
+    // 주간 인기 게시물 목록 조회 (Top 5)
+    @GetMapping("/best")
+    public ResponseEntity<BaseResponse<List<PostGetBest5Response>>> getBest() {
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, postViewService.getWeeklyBestPosts()));
     }
 
     // 게시물 수정

@@ -17,7 +17,6 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserType;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +30,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostViewService postViewService;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -56,7 +56,9 @@ public class PostService {
 
     // 게시물 단건 조회
     @Transactional(readOnly = true)
-    public PostGetOneResponse getOne(Long postId) {
+    public PostGetOneResponse getOne(Long postId, String clientId) {
+        postViewService.record(postId, clientId);
+
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
@@ -70,7 +72,8 @@ public class PostService {
                 user.getNickname(),
                 post.getType(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                post.getViewCount()
         );
     }
 

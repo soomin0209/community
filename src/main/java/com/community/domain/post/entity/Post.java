@@ -32,6 +32,9 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private PostType type = PostType.GENERAL;
 
+    @Column(nullable = false)
+    private Long viewCount = 0L;
+
     public static Post register(
             Long userId,
             String title,
@@ -56,5 +59,9 @@ public class Post extends BaseEntity {
         }
         if (request.title() != null) this.title = request.title();
         if (request.content() != null) this.content = request.content();
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
     }
 }

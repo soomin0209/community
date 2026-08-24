@@ -55,7 +55,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.title,
                         user.nickname,
                         post.type,
-                        post.createdAt))
+                        post.createdAt,
+                        post.viewCount))
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
                 .where(
@@ -100,7 +101,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                             post.title,
                             user.nickname,
                             post.type,
-                            post.createdAt))
+                            post.createdAt,
+                            post.viewCount))
                     .from(post)
                     .join(user).on(post.userId.eq(user.id))
                     .where(
@@ -124,7 +126,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.title,
                         user.nickname,
                         post.type,
-                        post.createdAt))
+                        post.createdAt,
+                        post.viewCount))
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
                 .where(
