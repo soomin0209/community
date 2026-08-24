@@ -41,4 +41,8 @@ public class Reaction {
 
         return reaction;
     }
+
+    public void update(ReactionType type) {
+        this.type = type;
+    }
 }
