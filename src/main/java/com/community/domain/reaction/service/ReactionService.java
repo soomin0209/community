@@ -4,9 +4,9 @@ import com.community.common.exception.ServiceErrorException;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
-import com.community.domain.reaction.dto.ReactionResponse;
+import com.community.domain.reaction.dto.request.ReactionRequest;
+import com.community.domain.reaction.dto.response.ReactionResponse;
 import com.community.domain.reaction.entity.Reaction;
-import com.community.domain.reaction.enums.ReactionType;
 import com.community.domain.reaction.repository.ReactionRepository;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
@@ -24,7 +24,7 @@ public class ReactionService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    public ReactionResponse react(Long postId, Long userId, ReactionType type) {
+    public ReactionResponse react(Long postId, Long userId, ReactionRequest request) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
@@ -34,14 +34,14 @@ public class ReactionService {
         Reaction reaction = reactionRepository.findByPostIdAndUserId(post.getId(), user.getId()).orElse(null);
 
         if (reaction != null) {
-            if (reaction.getType() == type) {
+            if (reaction.getType() == request.type()) {
                 reactionRepository.delete(reaction);
                 return null;
             } else {
-                reaction.update(type);
+                reaction.update(request.type());
             }
         } else {
-            reaction = Reaction.register(post.getId(), user.getId(), type);
+            reaction = Reaction.register(post.getId(), user.getId(), request.type());
             reactionRepository.save(reaction);
         }
 

@@ -1,4 +1,4 @@
-package com.community.domain.reaction.dto;
+package com.community.domain.reaction.dto.response;
 
 import com.community.domain.reaction.enums.ReactionType;
 

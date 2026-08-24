@@ -2,9 +2,10 @@ package com.community.domain.reaction.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
-import com.community.domain.reaction.dto.ReactionResponse;
-import com.community.domain.reaction.enums.ReactionType;
+import com.community.domain.reaction.dto.request.ReactionRequest;
+import com.community.domain.reaction.dto.response.ReactionResponse;
 import com.community.domain.reaction.service.ReactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +23,11 @@ public class ReactionController {
     public ResponseEntity<BaseResponse<ReactionResponse>> react(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
-            @RequestParam ReactionType type
+            @Valid @RequestBody ReactionRequest request
     ) {
         Long userId = userDetails.getUserId();
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, reactionService.react(postId, userId, type)));
+                HttpStatus.OK.name(), null, reactionService.react(postId, userId, request)));
     }
 }
