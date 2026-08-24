@@ -31,6 +31,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostViewService postViewService;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -56,12 +57,14 @@ public class PostService {
 
     // 게시물 단건 조회
     @Transactional(readOnly = true)
-    public PostGetOneResponse getOne(Long postId) {
+    public PostGetOneResponse getOne(Long postId, String clientId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
         User user = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        postViewService.record(post.getId(), clientId);
 
         return new PostGetOneResponse(
                 post.getId(),

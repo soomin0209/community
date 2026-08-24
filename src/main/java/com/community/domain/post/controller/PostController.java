@@ -12,6 +12,7 @@ import com.community.domain.post.dto.response.PostGetAllResponse;
 import com.community.domain.post.dto.response.PostGetOneResponse;
 import com.community.domain.post.dto.response.PostUpdateResponse;
 import com.community.domain.post.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,9 +41,33 @@ public class PostController {
 
     // 게시물 단건 조회
     @GetMapping("/{postId}")
-    public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(@PathVariable Long postId) {
+    public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(
+            @PathVariable Long postId,
+            HttpServletRequest request
+    ) {
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("Proxy-Client-IP");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getRemoteAddr();
+        }
+
+        if (clientIp != null && clientIp.contains(",")) {
+            clientIp = clientIp.split(",")[0].trim();
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, postService.getOne(postId)));
+                HttpStatus.OK.name(), null, postService.getOne(postId, clientIp)));
     }
 
     // 게시물 목록 조회
