@@ -9,5 +9,6 @@ public record PostGetAllResponse(
         String title,
         String nickname,
         PostType type,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Long viewCount
 ) {}

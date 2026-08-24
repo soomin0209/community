@@ -70,7 +70,8 @@ public class PostService {
                 user.getNickname(),
                 post.getType(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                post.getViewCount()
         );
     }
 

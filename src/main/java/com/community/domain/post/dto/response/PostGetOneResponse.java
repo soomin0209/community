@@ -11,5 +11,6 @@ public record PostGetOneResponse(
         String nickname,
         PostType type,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long viewCount
 ) {}
