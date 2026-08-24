@@ -1,6 +1,7 @@
 package com.community.domain.user.entity;
 
 import com.community.common.entity.BaseEntity;
+import com.community.domain.user.enums.UserType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,16 +25,22 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserType type;
+
     public static User register(
             String loginId,
             String nickname,
-            String password
+            String password,
+            UserType type
     ) {
         User user = new User();
 
         user.loginId = loginId;
         user.nickname = nickname;
         user.password = password;
+        user.type = type;
 
         return user;
     }
