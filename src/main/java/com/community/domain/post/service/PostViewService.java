@@ -2,11 +2,13 @@ package com.community.domain.post.service;
 
 import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.post.dto.response.PostGetBest5Response;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +52,39 @@ public class PostViewService {
             }
         } catch (Exception e) {
             log.error("[PostViewService] Redis ZSET 조회수 증가 실패 - postId={}, msg={}", postId, e.getMessage());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostGetBest5Response> getWeeklyBestPosts() {
+        try {
+            String weeklyKey = getWeeklyKey();
+            Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
+                    .reverseRangeWithScores(weeklyKey, 0, 4);
+
+            if (result == null || result.isEmpty()) return List.of();
+
+            return result.stream()
+                    .map(tuple -> {
+                        Long postId = Long.parseLong((String) tuple.getValue());
+                        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElse(null);
+
+                        if (post == null) {
+                            return null;
+                        }
+
+                        return new PostGetBest5Response(
+                                post.getId(),
+                                post.getTitle(),
+                                tuple.getScore() != null ? tuple.getScore().longValue() : 0L,
+                                post.getViewCount()
+                        );
+                    })
+                    .filter(Objects::nonNull)
+                    .toList();
+        } catch (Exception e) {
+            log.error("[PostViewService] 주간 인기 게시물 조회 실패 - msg={}", e.getMessage());
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
     }
 
