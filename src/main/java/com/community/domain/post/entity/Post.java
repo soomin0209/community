@@ -43,7 +43,9 @@ public class Post extends BaseEntity {
         post.userId = userId;
         post.title = title;
         post.content = content;
-        post.type = type;
+        if (type != null) {
+            post.type = type;
+        }
 
         return post;
     }
