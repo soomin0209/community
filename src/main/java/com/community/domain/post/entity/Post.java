@@ -3,6 +3,7 @@ package com.community.domain.post.entity;
 import com.community.common.entity.BaseEntity;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.post.dto.request.PostUpdateRequest;
+import com.community.domain.post.enums.PostType;
 import com.community.domain.post.exception.PostExceptionEnum;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -27,16 +28,24 @@ public class Post extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PostType type = PostType.GENERAL;
+
     public static Post register(
             Long userId,
             String title,
-            String content
+            String content,
+            PostType type
     ) {
         Post post = new Post();
 
         post.userId = userId;
         post.title = title;
         post.content = content;
+        if (type != null) {
+            post.type = type;
+        }
 
         return post;
     }

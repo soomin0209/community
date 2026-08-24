@@ -35,7 +35,7 @@ public class PostService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        Post post = Post.register(user.getId(), request.title(), request.content());
+        Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);
 
         return new PostCreateResponse(
@@ -43,6 +43,7 @@ public class PostService {
                 post.getTitle(),
                 post.getContent(),
                 user.getNickname(),
+                post.getType(),
                 post.getCreatedAt()
         );
     }
@@ -61,6 +62,7 @@ public class PostService {
                 post.getTitle(),
                 post.getContent(),
                 user.getNickname(),
+                post.getType(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

@@ -1,5 +1,6 @@
 package com.community.domain.post.dto.request;
 
+import com.community.domain.post.enums.PostType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -9,5 +10,7 @@ public record PostCreateRequest(
         String title,
 
         @NotBlank(message = "내용을 입력해주세요")
-        String content
+        String content,
+
+        PostType type
 ) {}
