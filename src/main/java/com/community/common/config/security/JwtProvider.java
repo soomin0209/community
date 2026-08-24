@@ -35,10 +35,11 @@ public class JwtProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createAccessToken(Long userId) {
+    public String createAccessToken(Long userId, String role) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("role", role)
                 .claim("tokenType", "ACCESS")
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenExpireTime))
@@ -59,6 +60,10 @@ public class JwtProvider {
 
     public Long getUserId(String token) {
         return Long.parseLong(getClaims(token).getSubject());
+    }
+
+    public String getRole(String token) {
+        return getClaims(token).get("role", String.class);
     }
 
     public long getRemainingTtl(String token) {

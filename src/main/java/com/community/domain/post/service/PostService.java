@@ -10,9 +10,11 @@ import com.community.domain.post.dto.response.PostGetAllResponse;
 import com.community.domain.post.dto.response.PostGetOneResponse;
 import com.community.domain.post.dto.response.PostUpdateResponse;
 import com.community.domain.post.entity.Post;
+import com.community.domain.post.enums.PostType;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.entity.User;
+import com.community.domain.user.enums.UserType;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -34,6 +36,10 @@ public class PostService {
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        if (request.type() == PostType.NOTICE && user.getType() != UserType.ADMIN) {
+            throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
+        }
 
         Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);

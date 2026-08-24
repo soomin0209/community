@@ -26,3 +26,6 @@ jwt:
     key: ${JWT_SECRET}
   accessExpire: 1800000
   refreshExpire: 604800000
+
+admin:
+  key: ${ADMIN_KEY}

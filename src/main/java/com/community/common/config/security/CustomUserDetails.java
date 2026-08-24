@@ -12,14 +12,16 @@ import java.util.List;
 public class CustomUserDetails implements UserDetails {
 
     private final Long userId;
+    private final String role;
 
-    public CustomUserDetails(Long userId) {
+    public CustomUserDetails(Long userId, String role) {
         this.userId = userId;
+        this.role = role;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     @Override
