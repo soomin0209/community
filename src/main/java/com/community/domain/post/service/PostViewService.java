@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -30,7 +31,7 @@ public class PostViewService {
     private static final long WEEKLY_KEY_TTL = 60 * 60 * 24 * 8;   // 8일
     private static final long DEDUP_KEY_TTL = 60 * 60 * 24;     // 1일
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(Long postId, String clientIp) {
         try {
             String dedupKey = DEDUP_KEY_PREFIX + postId + ":" + clientIp;
@@ -41,6 +42,7 @@ public class PostViewService {
                 Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElse(null);
                 if (post != null) {
                     post.incrementViewCount();
+                    postRepository.save(post);
                 }
 
                 String weeklyKey = getWeeklyKey();
