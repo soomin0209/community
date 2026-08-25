@@ -91,10 +91,6 @@ public class CommentService {
             throw new ServiceErrorException(CommentExceptionEnum.COMMENT_FORBIDDEN);
         }
 
-        if (!postRepository.existsByIdAndDeletedAtIsNull((comment.getPostId()))) {
-            throw new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND);
-        }
-
         comment.update(request);
 
         return new CommentUpdateResponse(
@@ -115,10 +111,6 @@ public class CommentService {
 
         if (!comment.getUserId().equals(user.getId())) {
             throw new ServiceErrorException(CommentExceptionEnum.COMMENT_FORBIDDEN);
-        }
-
-        if (!postRepository.existsByIdAndDeletedAtIsNull((comment.getPostId()))) {
-            throw new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND);
         }
 
         comment.delete();

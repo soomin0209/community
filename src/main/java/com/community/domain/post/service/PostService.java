@@ -2,6 +2,8 @@ package com.community.domain.post.service;
 
 import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.comment.entity.Comment;
+import com.community.domain.comment.repository.CommentRepository;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
 import com.community.domain.post.dto.request.PostUpdateRequest;
@@ -25,6 +27,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,6 +38,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostViewService postViewService;
     private final ReactionRepository reactionRepository;
+    private final CommentRepository commentRepository;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -150,5 +155,11 @@ public class PostService {
         }
 
         post.delete();
+
+        // 댓글도 삭제 처리
+        List<Comment> commentList = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+        for (Comment comment : commentList) {
+            comment.delete();
+        }
     }
 }
