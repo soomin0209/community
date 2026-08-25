@@ -68,4 +68,16 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, commentService.update(userId, commentId, request)));
     }
+
+    // 댓글 삭제
+    @DeleteMapping("/api/comments/{commentId}")
+    public ResponseEntity<BaseResponse<Void>> delete(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long commentId
+    ) {
+        Long userId = userDetails.getUserId();
+        commentService.delete(userId, commentId);
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, null));
+    }
 }

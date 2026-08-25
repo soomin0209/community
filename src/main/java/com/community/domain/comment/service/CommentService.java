@@ -104,4 +104,23 @@ public class CommentService {
                 comment.getUpdatedAt()
         );
     }
+
+    // 댓글 삭제
+    public void delete(Long userId, Long commentId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId).orElseThrow(
+                () -> new ServiceErrorException(CommentExceptionEnum.COMMENT_NOT_FOUND));
+
+        if (!comment.getUserId().equals(user.getId())) {
+            throw new ServiceErrorException(CommentExceptionEnum.COMMENT_FORBIDDEN);
+        }
+
+        if (!postRepository.existsByIdAndDeletedAtIsNull((comment.getPostId()))) {
+            throw new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND);
+        }
+
+        comment.delete();
+    }
 }
