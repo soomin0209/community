@@ -7,6 +7,7 @@ import com.community.domain.comment.dto.request.CommentCreateRequest;
 import com.community.domain.comment.dto.request.CommentPageCondition;
 import com.community.domain.comment.dto.response.CommentCreateResponse;
 import com.community.domain.comment.dto.response.CommentGetAllResponse;
+import com.community.domain.comment.dto.response.CommentGetMineResponse;
 import com.community.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +18,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/posts/{postId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping
+    // 댓글 등록
+    @PostMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CommentCreateResponse>> create(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
@@ -33,12 +34,24 @@ public class CommentController {
                 HttpStatus.CREATED.name(), null, commentService.create(postId, userId, request)));
     }
 
-    @GetMapping
+    // 댓글 목록 조회
+    @GetMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<PageResponse<CommentGetAllResponse>>> getAll(
             @PathVariable Long postId,
             @Valid @ModelAttribute CommentPageCondition condition
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, commentService.getAll(postId, condition)));
+    }
+
+    // 내 댓글 목록 조회
+    @GetMapping("/api/comments/my")
+    public ResponseEntity<BaseResponse<PageResponse<CommentGetMineResponse>>> getMine(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @ModelAttribute CommentPageCondition condition
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, commentService.getMine(userId, condition)));
     }
 }

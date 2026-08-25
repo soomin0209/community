@@ -1,6 +1,7 @@
 package com.community.domain.comment.repository;
 
 import com.community.domain.comment.dto.response.CommentGetAllResponse;
+import com.community.domain.comment.dto.response.CommentGetMineResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 import static com.community.domain.comment.entity.QComment.comment;
+import static com.community.domain.post.entity.QPost.post;
 import static com.community.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<CommentGetAllResponse> findCommentsWithCondition(Pageable pageable, Long postId, Long userId) {
+    public Page<CommentGetAllResponse> findCommentsWithCondition(Pageable pageable, Long postId) {
         List<CommentGetAllResponse> list = queryFactory
                 .select(Projections.constructor(CommentGetAllResponse.class,
                         comment.id,
@@ -31,8 +33,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .join(user).on(comment.userId.eq(user.id))
                 .where(
                         comment.deletedAt.isNull(),
-                        postIdCondition(postId),
-                        userIdCondition(userId)
+                        comment.postId.eq(postId)
                 )
                 .orderBy(comment.createdAt.asc())
                 .offset(pageable.getOffset())
@@ -45,8 +46,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .join(user).on(comment.userId.eq(user.id))
                 .where(
                         comment.deletedAt.isNull(),
-                        postIdCondition(postId),
-                        userIdCondition(userId)
+                        comment.postId.eq(postId)
                 )
                 .fetchOne();
 
@@ -55,11 +55,38 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
         return new PageImpl<>(list, pageable, total);
     }
 
-    private BooleanExpression postIdCondition(Long postId) {
-        return postId != null ? comment.postId.eq(postId) : null;
-    }
+    @Override
+    public Page<CommentGetMineResponse> findMyCommentsWithCondition(Pageable pageable, Long userId) {
+        List<CommentGetMineResponse> list = queryFactory
+                .select(Projections.constructor(CommentGetMineResponse.class,
+                        comment.id,
+                        post.id,
+                        post.title,
+                        comment.content,
+                        comment.createdAt))
+                .from(comment)
+                .join(post).on(comment.postId.eq(post.id))
+                .where(
+                        comment.deletedAt.isNull(),
+                        comment.userId.eq(userId)
+                )
+                .orderBy(comment.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
 
-    private BooleanExpression userIdCondition(Long userId) {
-        return userId != null ? comment.userId.eq(userId) : null;
+        Long total = queryFactory
+                .select(comment.count())
+                .from(comment)
+                .join(post).on(comment.postId.eq(post.id))
+                .where(
+                        comment.deletedAt.isNull(),
+                        comment.userId.eq(userId)
+                )
+                .fetchOne();
+
+        if (total == null) total = 0L;
+
+        return new PageImpl<>(list, pageable, total);
     }
 }
