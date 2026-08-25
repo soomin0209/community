@@ -13,6 +13,8 @@ import com.community.domain.post.entity.Post;
 import com.community.domain.post.enums.PostType;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
+import com.community.domain.reaction.enums.ReactionType;
+import com.community.domain.reaction.repository.ReactionRepository;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserType;
 import com.community.domain.user.exception.UserExceptionEnum;
@@ -31,6 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostViewService postViewService;
+    private final ReactionRepository reactionRepository;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -65,6 +68,9 @@ public class PostService {
         User user = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
+        Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
+        Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
+
         return new PostGetOneResponse(
                 post.getId(),
                 post.getTitle(),
@@ -73,7 +79,9 @@ public class PostService {
                 post.getType(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                post.getViewCount()
+                post.getViewCount(),
+                likeCount,
+                dislikeCount
         );
     }
 

@@ -12,5 +12,7 @@ public record PostGetOneResponse(
         PostType type,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        Long viewCount
+        Long viewCount,
+        Long likeCount,
+        Long dislikeCount
 ) {}
