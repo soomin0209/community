@@ -2,8 +2,11 @@ package com.community.domain.comment.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
+import com.community.common.dto.PageResponse;
 import com.community.domain.comment.dto.request.CommentCreateRequest;
+import com.community.domain.comment.dto.request.CommentPageCondition;
 import com.community.domain.comment.dto.response.CommentCreateResponse;
+import com.community.domain.comment.dto.response.CommentGetAllResponse;
 import com.community.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +31,14 @@ public class CommentController {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
                 HttpStatus.CREATED.name(), null, commentService.create(postId, userId, request)));
+    }
+
+    @GetMapping
+    public ResponseEntity<BaseResponse<PageResponse<CommentGetAllResponse>>> getAll(
+            @PathVariable Long postId,
+            @Valid @ModelAttribute CommentPageCondition condition
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, commentService.getAll(postId, condition)));
     }
 }
