@@ -9,6 +9,7 @@ public record PostGetAllResponse(
         String title,
         String nickname,
         PostType type,
+        Boolean isPinned,
         LocalDateTime createdAt,
         Long viewCount
 ) {}
