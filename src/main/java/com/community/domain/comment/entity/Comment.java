@@ -1,6 +1,7 @@
 package com.community.domain.comment.entity;
 
 import com.community.common.entity.BaseEntity;
+import com.community.domain.comment.dto.request.CommentUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,5 +37,9 @@ public class Comment extends BaseEntity {
         comment.content = content;
 
         return comment;
+    }
+
+    public void update(CommentUpdateRequest request) {
+        this.content = request.content();
     }
 }

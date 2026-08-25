@@ -5,9 +5,11 @@ import com.community.common.dto.BaseResponse;
 import com.community.common.dto.PageResponse;
 import com.community.domain.comment.dto.request.CommentCreateRequest;
 import com.community.domain.comment.dto.request.CommentPageCondition;
+import com.community.domain.comment.dto.request.CommentUpdateRequest;
 import com.community.domain.comment.dto.response.CommentCreateResponse;
 import com.community.domain.comment.dto.response.CommentGetAllResponse;
 import com.community.domain.comment.dto.response.CommentGetMineResponse;
+import com.community.domain.comment.dto.response.CommentUpdateResponse;
 import com.community.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +55,17 @@ public class CommentController {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, commentService.getMine(userId, condition)));
+    }
+
+    // 댓글 수정
+    @PatchMapping("/api/comments/{commentId}")
+    public ResponseEntity<BaseResponse<CommentUpdateResponse>> update(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentUpdateRequest request
+    ) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, commentService.update(userId, commentId, request)));
     }
 }

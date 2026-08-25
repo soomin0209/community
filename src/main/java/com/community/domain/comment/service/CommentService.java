@@ -4,10 +4,13 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.comment.dto.request.CommentCreateRequest;
 import com.community.domain.comment.dto.request.CommentPageCondition;
+import com.community.domain.comment.dto.request.CommentUpdateRequest;
 import com.community.domain.comment.dto.response.CommentCreateResponse;
 import com.community.domain.comment.dto.response.CommentGetAllResponse;
 import com.community.domain.comment.dto.response.CommentGetMineResponse;
+import com.community.domain.comment.dto.response.CommentUpdateResponse;
 import com.community.domain.comment.entity.Comment;
+import com.community.domain.comment.exception.CommentExceptionEnum;
 import com.community.domain.comment.repository.CommentRepository;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
@@ -43,7 +46,6 @@ public class CommentService {
 
         return new CommentCreateResponse(
                 comment.getId(),
-                user.getNickname(),
                 comment.getContent(),
                 comment.getCreatedAt()
         );
@@ -75,5 +77,31 @@ public class CommentService {
         );
 
         return PageResponse.from(page);
+    }
+
+    // 댓글 수정
+    public CommentUpdateResponse update(Long userId, Long commentId, CommentUpdateRequest request) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId).orElseThrow(
+                () -> new ServiceErrorException(CommentExceptionEnum.COMMENT_NOT_FOUND));
+
+        if (!comment.getUserId().equals(user.getId())) {
+            throw new ServiceErrorException(CommentExceptionEnum.COMMENT_FORBIDDEN);
+        }
+
+        if (!postRepository.existsByIdAndDeletedAtIsNull((comment.getPostId()))) {
+            throw new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND);
+        }
+
+        comment.update(request);
+
+        return new CommentUpdateResponse(
+                comment.getId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
+        );
     }
 }
