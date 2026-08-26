@@ -26,16 +26,22 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
         List<CommentGetAllResponse> list = queryFactory
                 .select(Projections.constructor(CommentGetAllResponse.class,
                         comment.id,
+                        comment.parentId,
                         user.nickname,
                         comment.content,
-                        comment.createdAt))
+                        comment.createdAt,
+                        comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
                 .where(
                         comment.deletedAt.isNull(),
                         comment.postId.eq(postId)
                 )
-                .orderBy(comment.createdAt.asc())
+                .orderBy(
+                        comment.parentId.coalesce(comment.id).asc(),
+                        comment.depth.asc(),
+                        comment.createdAt.asc()
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

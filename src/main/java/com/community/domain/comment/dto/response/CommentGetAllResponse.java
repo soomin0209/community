@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 
 public record CommentGetAllResponse(
         Long id,
+        Long parentId,
         String nickname,
         String content,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        int depth
 ) {}
