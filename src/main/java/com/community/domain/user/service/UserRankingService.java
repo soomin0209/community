@@ -38,6 +38,12 @@ public class UserRankingService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordComment(Long userId) {
         try {
+            User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElse(null);
+            if (user == null) return;
+
+            user.increaseCommentCount();
+            userRepository.save(user);
+
             String weeklyKey = getWeeklyKey(UserRankType.COMMENT.name().toLowerCase());
             redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
 
@@ -52,6 +58,12 @@ public class UserRankingService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordPost(Long userId) {
         try {
+            User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElse(null);
+            if (user == null) return;
+
+            user.increasePostCount();
+            userRepository.save(user);
+
             String weeklyKey = getWeeklyKey(UserRankType.POST.name().toLowerCase());
             redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
 
@@ -66,12 +78,18 @@ public class UserRankingService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordVisit(Long userId) {
         try {
+            User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElse(null);
+            if (user == null) return;
+
             String dateKey = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
             String dedupKey = DEDUP_KEY_PREFIX + userId + ":" + dateKey;
             Boolean isFirstVisit = redisTemplate.opsForValue()
                     .setIfAbsent(dedupKey, "locked", Duration.ofHours(DEDUP_KEY_TTL));
 
             if (Boolean.TRUE.equals(isFirstVisit)) {
+                user.increaseVisitCount();
+                userRepository.save(user);
+
                 String weeklyKey = getWeeklyKey(UserRankType.VISIT.name().toLowerCase());
                 redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
 

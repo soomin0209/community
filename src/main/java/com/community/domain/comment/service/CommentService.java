@@ -118,5 +118,6 @@ public class CommentService {
         }
 
         comment.delete();
+        user.decreaseCommentCount();
     }
 }

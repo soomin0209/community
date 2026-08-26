@@ -159,11 +159,15 @@ public class PostService {
         }
 
         post.delete();
+        user.decreasePostCount();
 
         // 댓글도 삭제 처리
         List<Comment> commentList = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
         for (Comment comment : commentList) {
+            User commentUser = userRepository.findByIdAndDeletedAtIsNull(comment.getUserId()).orElse(null);
+
             comment.delete();
+            if (commentUser != null) commentUser.decreaseCommentCount();
         }
     }
 }
