@@ -69,21 +69,48 @@ public class User extends BaseEntity {
 
     public void increaseVisitCount() {
         this.visitCount += 1;
+        updateGrade();
     }
 
     public void increasePostCount() {
         this.postCount += 1;
+        updateGrade();
     }
 
     public void decreasePostCount() {
-        if (this.postCount > 0) this.postCount -= 1;
+        if (this.postCount > 0) {
+            this.postCount -= 1;
+            updateGrade();
+        }
     }
 
     public void increaseCommentCount() {
         this.commentCount += 1;
+        updateGrade();
     }
 
     public void decreaseCommentCount() {
-        if (this.postCount > 0) this.commentCount -= 1;
+        if (this.commentCount > 0) {
+            this.commentCount -= 1;
+            updateGrade();
+        }
+    }
+
+    public void updateGrade() {
+        if (this.visitCount >= 30 && this.postCount >= 10 && this.commentCount >= 30) {
+            this.grade = UserGrade.GOLD;
+        } else if (this.visitCount >= 10 && this.postCount >= 3 && this.commentCount >= 10) {
+            this.grade = UserGrade.SILVER;
+        } else {
+            this.grade = UserGrade.BRONZE;
+        }
+    }
+
+    public void setPostCount(Long postCount) {
+        this.postCount = postCount;
+    }
+
+    public void setCommentCount(Long commentCount) {
+        this.commentCount = commentCount;
     }
 }
