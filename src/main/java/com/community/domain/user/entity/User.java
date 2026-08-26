@@ -96,6 +96,16 @@ public class User extends BaseEntity {
         }
     }
 
+    public void setPostCount(Long postCount) {
+        this.postCount = postCount;
+        updateGrade();
+    }
+
+    public void setCommentCount(Long commentCount) {
+        this.commentCount = commentCount;
+        updateGrade();
+    }
+
     public void updateGrade() {
         if (this.visitCount >= 30 && this.postCount >= 10 && this.commentCount >= 30) {
             this.grade = UserGrade.GOLD;
@@ -104,13 +114,5 @@ public class User extends BaseEntity {
         } else {
             this.grade = UserGrade.BRONZE;
         }
-    }
-
-    public void setPostCount(Long postCount) {
-        this.postCount = postCount;
-    }
-
-    public void setCommentCount(Long commentCount) {
-        this.commentCount = commentCount;
     }
 }
