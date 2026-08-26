@@ -5,10 +5,9 @@ import com.community.common.dto.BaseResponse;
 import com.community.domain.auth.service.AuthService;
 import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
 import com.community.domain.user.dto.request.UserUpdatePasswordRequest;
-import com.community.domain.user.dto.response.UserGetMineResponse;
-import com.community.domain.user.dto.response.UserGetOneResponse;
-import com.community.domain.user.dto.response.UserUpdateNicknameResponse;
-import com.community.domain.user.dto.response.UserUpdatePasswordResponse;
+import com.community.domain.user.dto.response.*;
+import com.community.domain.user.enums.UserRankType;
+import com.community.domain.user.service.UserRankingService;
 import com.community.domain.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -27,6 +28,7 @@ public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final UserRankingService userRankingService;
 
     // 프로필 조회
     @GetMapping("/{userId}")
@@ -43,6 +45,15 @@ public class UserController {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, userService.getMine(userId)));
+    }
+
+    // 주간 사용자 랭킹 조회 (Top 5)
+    @GetMapping("/ranking")
+    public ResponseEntity<BaseResponse<List<UserGetRanking5Response>>> getRanking(
+            @RequestParam(defaultValue = "COMMENT") UserRankType type
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, userRankingService.getWeeklyUserRanking(type)));
     }
 
     // 닉네임 변경
