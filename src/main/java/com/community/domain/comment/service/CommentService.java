@@ -35,6 +35,8 @@ public class CommentService {
     private final UserRepository userRepository;
     private final UserRankingService userRankingService;
 
+    private static final int MAX_DEPTH = 1;
+
     // 댓글 등록
     public CommentCreateResponse create(Long postId, Long userId, CommentCreateRequest request) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
@@ -43,13 +45,36 @@ public class CommentService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        Comment comment = Comment.register(post.getId(), user.getId(), request.content());
+        int depth = 0;
+        if (request.parentId() != null) {
+            Comment parentComment = commentRepository.findByIdAndDeletedAtIsNull(request.parentId()).orElseThrow(
+                    () -> new ServiceErrorException(CommentExceptionEnum.COMMENT_NOT_FOUND));
+
+            if (!parentComment.getPostId().equals(postId)) {
+                throw new ServiceErrorException(CommentExceptionEnum.COMMENT_INVALID_PARENT);
+            }
+
+            if (parentComment.getDepth() >= MAX_DEPTH) {
+                throw new ServiceErrorException(CommentExceptionEnum.COMMENT_DEPTH_LIMIT_EXCEED);
+            }
+
+            depth = parentComment.getDepth() + 1;
+        }
+
+        Comment comment = Comment.register(
+                request.parentId(),
+                post.getId(),
+                user.getId(),
+                request.content(),
+                depth
+        );
         commentRepository.save(comment);
 
         userRankingService.recordComment(user.getId());
 
         return new CommentCreateResponse(
                 comment.getId(),
+                comment.getParentId(),
                 comment.getContent(),
                 comment.getCreatedAt()
         );
