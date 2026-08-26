@@ -65,13 +65,13 @@ public class PostService {
     // 게시물 단건 조회
     @Transactional(readOnly = true)
     public PostGetOneResponse getOne(Long postId, String clientId) {
-        postViewService.record(postId, clientId);
-
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
         User user = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        postViewService.record(postId, clientId);
 
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);

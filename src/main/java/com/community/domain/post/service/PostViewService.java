@@ -34,16 +34,16 @@ public class PostViewService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(Long postId, String clientIp) {
         try {
+            Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElse(null);
+            if (post == null) return;
+
             String dedupKey = DEDUP_KEY_PREFIX + postId + ":" + clientIp;
             Boolean isFirstView = redisTemplate.opsForValue()
                     .setIfAbsent(dedupKey, "locked", Duration.ofDays(DEDUP_KEY_TTL));
 
             if (Boolean.TRUE.equals(isFirstView)) {
-                Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElse(null);
-                if (post != null) {
-                    post.incrementViewCount();
-                    postRepository.save(post);
-                }
+                post.incrementViewCount();
+                postRepository.save(post);
 
                 String weeklyKey = getWeeklyKey();
                 redisTemplate.opsForZSet().incrementScore(weeklyKey, postId.toString(), 1);
