@@ -21,6 +21,7 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserType;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
+import com.community.domain.user.service.UserRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +40,7 @@ public class PostService {
     private final PostViewService postViewService;
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
+    private final UserRankingService userRankingService;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -51,6 +53,8 @@ public class PostService {
 
         Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);
+
+        userRankingService.recordPost(user.getId());
 
         return new PostCreateResponse(
                 post.getId(),
@@ -65,13 +69,13 @@ public class PostService {
     // 게시물 단건 조회
     @Transactional(readOnly = true)
     public PostGetOneResponse getOne(Long postId, String clientId) {
-        postViewService.record(postId, clientId);
-
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
         User user = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        postViewService.record(postId, clientId);
 
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
@@ -155,11 +159,15 @@ public class PostService {
         }
 
         post.delete();
+        user.decreasePostCount();
 
         // 댓글도 삭제 처리
         List<Comment> commentList = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
         for (Comment comment : commentList) {
+            User commentUser = userRepository.findByIdAndDeletedAtIsNull(comment.getUserId()).orElse(null);
+
             comment.delete();
+            if (commentUser != null) commentUser.decreaseCommentCount();
         }
     }
 }

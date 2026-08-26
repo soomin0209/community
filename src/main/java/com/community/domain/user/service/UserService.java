@@ -32,13 +32,13 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        Long postCount = postRepository.countByUserIdAndDeletedAtIsNull(userId);
-
         return new UserGetOneResponse(
                 user.getId(),
                 user.getNickname(),
                 user.getCreatedAt(),
-                postCount
+                user.getVisitCount(),
+                user.getPostCount(),
+                user.getCommentCount()
         );
     }
 
@@ -48,14 +48,14 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        Long postCount = postRepository.countByUserIdAndDeletedAtIsNull(userId);
-
         return new UserGetMineResponse(
                 user.getId(),
                 user.getLoginId(),
                 user.getNickname(),
                 user.getCreatedAt(),
-                postCount
+                user.getVisitCount(),
+                user.getPostCount(),
+                user.getCommentCount()
         );
     }
 

@@ -6,5 +6,7 @@ public record UserGetOneResponse(
         Long userId,
         String nickname,
         LocalDateTime createdAt,
-        Long postCount
+        Long visitCount,
+        Long postCount,
+        Long commentCount
 ) {}

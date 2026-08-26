@@ -7,5 +7,7 @@ public record UserGetMineResponse(
         String loginId,
         String nickname,
         LocalDateTime createdAt,
-        Long postCount
+        Long visitCount,
+        Long postCount,
+        Long commentCount
 ) {}
