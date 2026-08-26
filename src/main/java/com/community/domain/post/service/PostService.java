@@ -21,6 +21,7 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserType;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
+import com.community.domain.user.service.UserRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +40,7 @@ public class PostService {
     private final PostViewService postViewService;
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
+    private final UserRankingService userRankingService;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -51,6 +53,8 @@ public class PostService {
 
         Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);
+
+        userRankingService.recordPost(user.getId());
 
         return new PostCreateResponse(
                 post.getId(),

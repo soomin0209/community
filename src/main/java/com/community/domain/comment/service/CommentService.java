@@ -18,6 +18,7 @@ import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
+import com.community.domain.user.service.UserRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final UserRankingService userRankingService;
 
     // 댓글 등록
     public CommentCreateResponse create(Long postId, Long userId, CommentCreateRequest request) {
@@ -43,6 +45,8 @@ public class CommentService {
 
         Comment comment = Comment.register(post.getId(), user.getId(), request.content());
         commentRepository.save(comment);
+
+        userRankingService.recordComment(user.getId());
 
         return new CommentCreateResponse(
                 comment.getId(),
