@@ -1,9 +1,9 @@
 package com.community.domain.post.repository;
 
 import com.community.domain.post.entity.Post;
+import com.community.domain.post.enums.PostType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRepository {
@@ -11,5 +11,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 
     Long countByUserIdAndDeletedAtIsNull(Long userId);
 
-    boolean existsByIdAndDeletedAtIsNull(Long id);
+    Long countByTypeAndDeletedAtIsNullAndIsPinnedTrue(PostType type);
 }

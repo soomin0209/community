@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Table(name = "posts")
@@ -34,6 +36,11 @@ public class Post extends BaseEntity {
 
     @Column(nullable = false)
     private Long viewCount = 0L;
+
+    @Column(nullable = false)
+    private Boolean isPinned = false;
+
+    private LocalDateTime pinnedAt;
 
     public static Post register(
             Long userId,
@@ -63,5 +70,15 @@ public class Post extends BaseEntity {
 
     public void incrementViewCount() {
         this.viewCount++;
+    }
+
+    public void pin() {
+        this.isPinned = true;
+        this.pinnedAt = LocalDateTime.now();
+    }
+
+    public void unpin() {
+        this.isPinned = false;
+        this.pinnedAt = null;
     }
 }

@@ -55,6 +55,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.title,
                         user.nickname,
                         post.type,
+                        post.isPinned,
                         post.createdAt,
                         post.viewCount))
                 .from(post)
@@ -101,15 +102,17 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                             post.title,
                             user.nickname,
                             post.type,
+                            post.isPinned,
                             post.createdAt,
                             post.viewCount))
                     .from(post)
                     .join(user).on(post.userId.eq(user.id))
                     .where(
                             post.deletedAt.isNull(),
-                            post.type.eq(PostType.NOTICE)
+                            post.type.eq(PostType.NOTICE),
+                            post.isPinned.isTrue()
                     )
-                    .orderBy(getOrderSpecifier(sortType))
+                    .orderBy(post.pinnedAt.desc())
                     .limit(10)
                     .fetch();
 
@@ -126,6 +129,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.title,
                         user.nickname,
                         post.type,
+                        post.isPinned,
                         post.createdAt,
                         post.viewCount))
                 .from(post)
