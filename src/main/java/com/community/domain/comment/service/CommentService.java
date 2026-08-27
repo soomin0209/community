@@ -21,9 +21,15 @@ import com.community.domain.user.repository.UserRepository;
 import com.community.domain.user.service.UserRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -86,12 +92,45 @@ public class CommentService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        Page<CommentGetAllResponse> page = commentRepository.findCommentsWithCondition(
+        List<CommentGetAllResponse> parentList = commentRepository.findParentCommentsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
                 post.getId()
         );
 
-        return PageResponse.from(page);
+        if (parentList.isEmpty()) {
+            return PageResponse.from(new PageImpl<>(
+                    List.of(),
+                    PageRequest.of(condition.getPage(), condition.getSize()),
+                    0
+            ));
+        }
+
+        List<Long> parentIds = parentList.stream()
+                .map(CommentGetAllResponse::getId)
+                .toList();
+        List<CommentGetAllResponse> childList = commentRepository.findChildCommentsByParentIds(parentIds);
+
+        Map<Long, CommentGetAllResponse> map = new LinkedHashMap<>();
+        for (CommentGetAllResponse parent : parentList) {
+            map.put(parent.getId(), parent);
+        }
+        for (CommentGetAllResponse child : childList) {
+            map.put(child.getId(), child);
+        }
+        for (CommentGetAllResponse child : childList) {
+            if (child.getParentId() != null) {
+                map.get(child.getParentId()).addChild(child);
+            }
+        }
+
+        Long totalElements = commentRepository.countByPostIdAndDeletedAtIsNull(post.getId());
+        Page<CommentGetAllResponse> resultPage = new PageImpl<>(
+                new ArrayList<>(parentList),
+                PageRequest.of(condition.getPage(), condition.getSize()),
+                totalElements
+        );
+
+        return PageResponse.from(resultPage);
     }
 
     // 내 댓글 목록 조회

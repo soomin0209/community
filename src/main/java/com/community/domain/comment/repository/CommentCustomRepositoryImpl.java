@@ -22,8 +22,8 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<CommentGetAllResponse> findCommentsWithCondition(Pageable pageable, Long postId) {
-        List<CommentGetAllResponse> list = queryFactory
+    public List<CommentGetAllResponse> findParentCommentsWithCondition(Pageable pageable, Long postId) {
+        return queryFactory
                 .select(Projections.constructor(CommentGetAllResponse.class,
                         comment.id,
                         comment.parentId,
@@ -35,30 +35,35 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .join(user).on(comment.userId.eq(user.id))
                 .where(
                         comment.deletedAt.isNull(),
-                        comment.postId.eq(postId)
+                        comment.postId.eq(postId),
+                        comment.parentId.isNull()
                 )
-                .orderBy(
-                        comment.parentId.coalesce(comment.id).asc(),
-                        comment.depth.asc(),
-                        comment.createdAt.asc()
-                )
+                .orderBy(comment.createdAt.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
 
-        Long total = queryFactory
-                .select(comment.count())
+    @Override
+    public List<CommentGetAllResponse> findChildCommentsByParentIds(List<Long> parentIds) {
+        if (parentIds == null || parentIds.isEmpty()) return List.of();
+
+        return queryFactory
+                .select(Projections.constructor(CommentGetAllResponse.class,
+                        comment.id,
+                        comment.parentId,
+                        user.nickname,
+                        comment.content,
+                        comment.createdAt,
+                        comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
                 .where(
                         comment.deletedAt.isNull(),
-                        comment.postId.eq(postId)
+                        comment.parentId.in(parentIds)
                 )
-                .fetchOne();
-
-        if (total == null) total = 0L;
-
-        return new PageImpl<>(list, pageable, total);
+                .orderBy(comment.createdAt.asc())
+                .fetch();
     }
 
     @Override
