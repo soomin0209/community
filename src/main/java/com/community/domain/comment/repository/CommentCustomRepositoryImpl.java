@@ -3,7 +3,6 @@ package com.community.domain.comment.repository;
 import com.community.domain.comment.dto.response.CommentGetAllResponse;
 import com.community.domain.comment.dto.response.CommentGetMineResponse;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,37 +21,52 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<CommentGetAllResponse> findCommentsWithCondition(Pageable pageable, Long postId) {
-        List<CommentGetAllResponse> list = queryFactory
+    public List<CommentGetAllResponse> findParentCommentsWithCursor(Long cursor, int size, Long postId) {
+        return queryFactory
                 .select(Projections.constructor(CommentGetAllResponse.class,
                         comment.id,
+                        comment.parentId,
                         user.nickname,
+                        comment.userId.eq(post.userId),
                         comment.content,
-                        comment.createdAt))
+                        comment.createdAt,
+                        comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
+                .join(post).on(comment.postId.eq(post.id))
                 .where(
                         comment.deletedAt.isNull(),
-                        comment.postId.eq(postId)
+                        comment.postId.eq(postId),
+                        comment.parentId.isNull(),
+                        cursor != null ? comment.id.gt(cursor) : null
+                )
+                .orderBy(comment.id.asc())
+                .limit(size + 1)    // hasNext 판단을 위해 +1
+                .fetch();
+    }
+
+    @Override
+    public List<CommentGetAllResponse> findChildCommentsByParentIds(List<Long> parentIds) {
+        if (parentIds == null || parentIds.isEmpty()) return List.of();
+
+        return queryFactory
+                .select(Projections.constructor(CommentGetAllResponse.class,
+                        comment.id,
+                        comment.parentId,
+                        user.nickname,
+                        comment.userId.eq(post.userId),
+                        comment.content,
+                        comment.createdAt,
+                        comment.depth))
+                .from(comment)
+                .join(user).on(comment.userId.eq(user.id))
+                .join(post).on(comment.postId.eq(post.id))
+                .where(
+                        comment.deletedAt.isNull(),
+                        comment.parentId.in(parentIds)
                 )
                 .orderBy(comment.createdAt.asc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
-
-        Long total = queryFactory
-                .select(comment.count())
-                .from(comment)
-                .join(user).on(comment.userId.eq(user.id))
-                .where(
-                        comment.deletedAt.isNull(),
-                        comment.postId.eq(postId)
-                )
-                .fetchOne();
-
-        if (total == null) total = 0L;
-
-        return new PageImpl<>(list, pageable, total);
     }
 
     @Override

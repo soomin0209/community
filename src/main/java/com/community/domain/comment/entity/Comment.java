@@ -16,6 +16,8 @@ public class Comment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long parentId;
+
     @Column(nullable = false)
     private Long postId;
 
@@ -25,16 +27,23 @@ public class Comment extends BaseEntity {
     @Column(nullable = false, length = 200)
     private String content;
 
+    @Column(nullable = false)
+    private int depth = 0;
+
     public static Comment register(
+            Long parentId,
             Long postId,
             Long userId,
-            String content
+            String content,
+            int depth
     ) {
         Comment comment = new Comment();
 
+        comment.parentId = parentId;
         comment.postId = postId;
         comment.userId = userId;
         comment.content = content;
+        comment.depth = depth;
 
         return comment;
     }

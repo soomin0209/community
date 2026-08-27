@@ -2,8 +2,10 @@ package com.community.domain.comment.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
+import com.community.common.dto.CursorResponse;
 import com.community.common.dto.PageResponse;
 import com.community.domain.comment.dto.request.CommentCreateRequest;
+import com.community.domain.comment.dto.request.CommentCursorCondition;
 import com.community.domain.comment.dto.request.CommentPageCondition;
 import com.community.domain.comment.dto.request.CommentUpdateRequest;
 import com.community.domain.comment.dto.response.CommentCreateResponse;
@@ -38,9 +40,9 @@ public class CommentController {
 
     // 댓글 목록 조회
     @GetMapping("/api/posts/{postId}/comments")
-    public ResponseEntity<BaseResponse<PageResponse<CommentGetAllResponse>>> getAll(
+    public ResponseEntity<BaseResponse<CursorResponse<CommentGetAllResponse>>> getAll(
             @PathVariable Long postId,
-            @Valid @ModelAttribute CommentPageCondition condition
+            @Valid @ModelAttribute CommentCursorCondition condition
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, commentService.getAll(postId, condition)));
