@@ -3,7 +3,6 @@ package com.community.domain.comment.repository;
 import com.community.domain.comment.dto.response.CommentGetAllResponse;
 import com.community.domain.comment.dto.response.CommentGetMineResponse;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,7 +21,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<CommentGetAllResponse> findParentCommentsWithCondition(Pageable pageable, Long postId) {
+    public List<CommentGetAllResponse> findParentCommentsWithCursor(Long cursor, int size, Long postId) {
         return queryFactory
                 .select(Projections.constructor(CommentGetAllResponse.class,
                         comment.id,
@@ -36,11 +35,11 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .where(
                         comment.deletedAt.isNull(),
                         comment.postId.eq(postId),
-                        comment.parentId.isNull()
+                        comment.parentId.isNull(),
+                        cursor != null ? comment.id.gt(cursor) : null
                 )
-                .orderBy(comment.createdAt.asc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .orderBy(comment.id.asc())
+                .limit(size + 1)    // hasNext 판단을 위해 +1
                 .fetch();
     }
 

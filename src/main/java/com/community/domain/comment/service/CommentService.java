@@ -1,8 +1,10 @@
 package com.community.domain.comment.service;
 
+import com.community.common.dto.CursorResponse;
 import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.comment.dto.request.CommentCreateRequest;
+import com.community.domain.comment.dto.request.CommentCursorCondition;
 import com.community.domain.comment.dto.request.CommentPageCondition;
 import com.community.domain.comment.dto.request.CommentUpdateRequest;
 import com.community.domain.comment.dto.response.CommentCreateResponse;
@@ -21,7 +23,6 @@ import com.community.domain.user.repository.UserRepository;
 import com.community.domain.user.service.UserRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,30 +89,32 @@ public class CommentService {
 
     // 댓글 목록 조회
     @Transactional(readOnly = true)
-    public PageResponse<CommentGetAllResponse> getAll(Long postId, CommentPageCondition condition) {
+    public CursorResponse<CommentGetAllResponse> getAll(Long postId, CommentCursorCondition condition) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        List<CommentGetAllResponse> parentList = commentRepository.findParentCommentsWithCondition(
-                PageRequest.of(condition.getPage(), condition.getSize()),
+        List<CommentGetAllResponse> parentList = commentRepository.findParentCommentsWithCursor(
+                condition.getCursor(),
+                condition.getSize(),
                 post.getId()
         );
 
         if (parentList.isEmpty()) {
-            return PageResponse.from(new PageImpl<>(
-                    List.of(),
-                    PageRequest.of(condition.getPage(), condition.getSize()),
-                    0
-            ));
+            return CursorResponse.of(List.of(), null, false, condition.getSize());
         }
 
-        List<Long> parentIds = parentList.stream()
+        boolean hasNext = parentList.size() > condition.getSize();
+        List<CommentGetAllResponse> actualParentList = hasNext ? parentList.subList(0, condition.getSize()) : parentList;
+
+        Long nextCursor = hasNext ? actualParentList.getLast().getId() : null;
+
+        List<Long> parentIds = actualParentList.stream()
                 .map(CommentGetAllResponse::getId)
                 .toList();
         List<CommentGetAllResponse> childList = commentRepository.findChildCommentsByParentIds(parentIds);
 
         Map<Long, CommentGetAllResponse> map = new LinkedHashMap<>();
-        for (CommentGetAllResponse parent : parentList) {
+        for (CommentGetAllResponse parent : actualParentList) {
             map.put(parent.getId(), parent);
         }
         for (CommentGetAllResponse child : childList) {
@@ -123,14 +126,7 @@ public class CommentService {
             }
         }
 
-        Long totalElements = commentRepository.countByPostIdAndDeletedAtIsNull(post.getId());
-        Page<CommentGetAllResponse> resultPage = new PageImpl<>(
-                new ArrayList<>(parentList),
-                PageRequest.of(condition.getPage(), condition.getSize()),
-                totalElements
-        );
-
-        return PageResponse.from(resultPage);
+        return CursorResponse.of(new ArrayList<>(actualParentList), nextCursor, hasNext, condition.getSize());
     }
 
     // 내 댓글 목록 조회
