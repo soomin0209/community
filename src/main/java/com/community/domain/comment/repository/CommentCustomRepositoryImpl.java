@@ -27,11 +27,13 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                         comment.id,
                         comment.parentId,
                         user.nickname,
+                        comment.userId.eq(post.userId),
                         comment.content,
                         comment.createdAt,
                         comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
+                .join(post).on(comment.postId.eq(post.id))
                 .where(
                         comment.deletedAt.isNull(),
                         comment.postId.eq(postId),
@@ -52,11 +54,13 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                         comment.id,
                         comment.parentId,
                         user.nickname,
+                        comment.userId.eq(post.userId),
                         comment.content,
                         comment.createdAt,
                         comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
+                .join(post).on(comment.postId.eq(post.id))
                 .where(
                         comment.deletedAt.isNull(),
                         comment.parentId.in(parentIds)

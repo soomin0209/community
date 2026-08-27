@@ -11,15 +11,17 @@ public class CommentGetAllResponse {
     private final Long id;
     private final Long parentId;
     private final String nickname;
+    private final boolean isPostWriter;
     private final String content;
     private final LocalDateTime createdAt;
     private final int depth;
     private final List<CommentGetAllResponse> children;
 
-    public CommentGetAllResponse(Long id, Long parentId, String nickname, String content, LocalDateTime createdAt, int depth) {
+    public CommentGetAllResponse(Long id, Long parentId, String nickname, Boolean isPostWriter, String content, LocalDateTime createdAt, int depth) {
         this.id = id;
         this.parentId = parentId;
         this.nickname = nickname;
+        this.isPostWriter = isPostWriter != null && isPostWriter;
         this.content = content;
         this.createdAt = createdAt;
         this.depth = depth;
