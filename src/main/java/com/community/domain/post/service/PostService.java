@@ -4,6 +4,7 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
+import com.community.domain.file.service.FileService;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
 import com.community.domain.post.dto.request.PostUpdateRequest;
@@ -41,6 +42,7 @@ public class PostService {
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
     private final UserRankingService userRankingService;
+    private final FileService fileService;
 
     // 게시물 등록
     public PostCreateResponse create(Long userId, PostCreateRequest request) {
@@ -53,6 +55,8 @@ public class PostService {
 
         Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);
+
+        fileService.attachFiles(post.getId(), request.fileIds());
 
         userRankingService.recordPost(user.getId());
 

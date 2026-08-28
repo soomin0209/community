@@ -62,6 +62,23 @@ public class FileService {
         return responses;
     }
 
+    public void attachFiles(Long postId, List<Long> fileIds) {
+        if (fileIds == null || fileIds.isEmpty()) {
+            return;
+        }
+
+        List<File> files = new ArrayList<>();
+        for (Long fileId : fileIds) {
+            File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
+                    () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+            files.add(file);
+        }
+
+        for (File file : files) {
+            file.attachToPost(postId);
+        }
+    }
+
     private FileUploadResponse uploadSingle(Long userId, MultipartFile file) {
         validateFile(file);
 
