@@ -4,6 +4,7 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
+import com.community.domain.file.dto.response.FileGetAllResponse;
 import com.community.domain.file.service.FileService;
 import com.community.domain.post.dto.request.PostCreateRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
@@ -58,6 +59,8 @@ public class PostService {
 
         fileService.attachFiles(post.getId(), request.fileIds());
 
+        List<FileGetAllResponse> files = fileService.getAll(post.getId());
+
         userRankingService.recordPost(user.getId());
 
         return new PostCreateResponse(
@@ -66,7 +69,8 @@ public class PostService {
                 post.getContent(),
                 user.getNickname(),
                 post.getType(),
-                post.getCreatedAt()
+                post.getCreatedAt(),
+                files
         );
     }
 
@@ -84,6 +88,8 @@ public class PostService {
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
 
+        List<FileGetAllResponse> files = fileService.getAll(post.getId());
+
         return new PostGetOneResponse(
                 post.getId(),
                 post.getTitle(),
@@ -94,7 +100,8 @@ public class PostService {
                 post.getUpdatedAt(),
                 post.getViewCount(),
                 likeCount,
-                dislikeCount
+                dislikeCount,
+                files
         );
     }
 

@@ -1,8 +1,10 @@
 package com.community.domain.post.dto.response;
 
+import com.community.domain.file.dto.response.FileGetAllResponse;
 import com.community.domain.post.enums.PostType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PostGetOneResponse(
         Long id,
@@ -14,5 +16,6 @@ public record PostGetOneResponse(
         LocalDateTime updatedAt,
         Long viewCount,
         Long likeCount,
-        Long dislikeCount
+        Long dislikeCount,
+        List<FileGetAllResponse> files
 ) {}

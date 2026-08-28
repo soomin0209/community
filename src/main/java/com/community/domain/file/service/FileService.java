@@ -1,6 +1,7 @@
 package com.community.domain.file.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.file.dto.response.FileGetAllResponse;
 import com.community.domain.file.dto.response.FileUploadResponse;
 import com.community.domain.file.entity.File;
 import com.community.domain.file.exception.FileExceptionEnum;
@@ -77,6 +78,25 @@ public class FileService {
         for (File file : files) {
             file.attachToPost(postId);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<FileGetAllResponse> getAll(Long postId) {
+        List<File> files = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+
+        List<FileGetAllResponse> responses = new ArrayList<>();
+        for (File file : files) {
+            FileGetAllResponse response = new FileGetAllResponse(
+                    file.getId(),
+                    file.getStoredPath(),
+                    file.getOriginalFilename(),
+                    file.getSize(),
+                    file.getContentType()
+            );
+            responses.add(response);
+        }
+
+        return responses;
     }
 
     private FileUploadResponse uploadSingle(Long userId, MultipartFile file) {
