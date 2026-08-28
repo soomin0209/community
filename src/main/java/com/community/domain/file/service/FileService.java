@@ -63,7 +63,7 @@ public class FileService {
         return responses;
     }
 
-    public void attachFiles(Long postId, List<Long> fileIds) {
+    public void attachFiles(Long userId, Long postId, List<Long> fileIds) {
         if (fileIds == null || fileIds.isEmpty()) {
             return;
         }
@@ -72,6 +72,15 @@ public class FileService {
         for (Long fileId : fileIds) {
             File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
                     () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+
+            if (!file.getUserId().equals(userId)) {
+                throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
+            }
+
+            if (file.getPostId() != null) {
+                throw new ServiceErrorException(FileExceptionEnum.FILE_ALREADY_ATTACHED);
+            }
+
             files.add(file);
         }
 

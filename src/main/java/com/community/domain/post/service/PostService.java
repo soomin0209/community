@@ -57,7 +57,7 @@ public class PostService {
         Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);
 
-        fileService.attachFiles(post.getId(), request.fileIds());
+        fileService.attachFiles(user.getId(), post.getId(), request.fileIds());
 
         List<FileGetAllResponse> files = fileService.getAll(post.getId());
 
