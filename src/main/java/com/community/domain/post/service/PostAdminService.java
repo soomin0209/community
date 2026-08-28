@@ -6,6 +6,7 @@ import com.community.domain.post.entity.Post;
 import com.community.domain.post.enums.PostType;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
+import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,20 +29,26 @@ public class PostAdminService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        if (post.getType() != PostType.NOTICE) {
-            throw new ServiceErrorException(PostExceptionEnum.POST_NOT_NOTICE);
-        }
+        User postWriter = userRepository.findByIdAndDeletedAtIsNull(post.getUserId()).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
         if (post.getIsPinned()) {
             post.unpin();
         } else {
-            Long pinnedCount = postRepository.countByTypeAndDeletedAtIsNullAndIsPinnedTrue(PostType.NOTICE);
+            Long pinnedCount = postRepository.countByDeletedAtIsNullAndIsPinnedTrue();
             if (pinnedCount >= 10) {
                 throw new ServiceErrorException(PostExceptionEnum.POST_PIN_LIMIT_EXCEEDED);
             }
             post.pin();
         }
 
-        return new PostPinResponse(post.getId(), post.getIsPinned(), post.getPinnedAt());
+        return new PostPinResponse(
+                post.getId(),
+                post.getTitle(),
+                postWriter.getNickname(),
+                post.getType(),
+                post.getCreatedAt(),
+                post.getIsPinned(),
+                post.getPinnedAt());
     }
 }
