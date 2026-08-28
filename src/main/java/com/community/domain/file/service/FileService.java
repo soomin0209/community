@@ -1,9 +1,25 @@
 package com.community.domain.file.service;
 
+import com.community.common.exception.ServiceErrorException;
+import com.community.domain.file.dto.response.FileUploadResponse;
+import com.community.domain.file.entity.File;
+import com.community.domain.file.exception.FileExceptionEnum;
 import com.community.domain.file.repository.FileRepository;
+import com.community.domain.user.exception.UserExceptionEnum;
+import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -11,4 +27,92 @@ import org.springframework.transaction.annotation.Transactional;
 public class FileService {
 
     private final FileRepository fileRepository;
+    private final UserRepository userRepository;
+
+    private static final String UPLOAD_DIR = "uploads/";
+    private static final List<String> ALLOWED_EXTENSIONS = List.of(
+            "jpg", "jpeg", "png", "gif", "webp",
+            "pdf", "txt", "doc", "docx", "xls", "xlsx",
+            "json", "xml", "csv", "md", "zip"
+    );
+    private static final List<String> BLOCKED_EXTENSIONS = List.of(
+            "exe", "bat", "sh", "jar", "war", "dll",
+            "jsp", "php", "asp", "aspx"
+    );
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+    private static final int MAX_FILES_COUNT = 10;
+
+    public List<FileUploadResponse> upload(Long userId, List<MultipartFile> files) {
+        if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
+            throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
+        }
+
+        if (files.size() > MAX_FILES_COUNT) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_COUNT_EXCEEDED);
+        }
+
+        List<FileUploadResponse> responses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                FileUploadResponse response = uploadSingle(userId, file);
+                responses.add(response);
+            }
+        }
+
+        return responses;
+    }
+
+    private FileUploadResponse uploadSingle(Long userId, MultipartFile file) {
+        validateFile(file);
+
+        try {
+            String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            Path filePath = uploadPath.resolve(storedFileName);
+
+            Files.createDirectories(uploadPath);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            File fileEntity = File.register(
+                    userId,
+                    file.getOriginalFilename(),
+                    "/" + UPLOAD_DIR + storedFileName,
+                    file.getSize(),
+                    file.getContentType()
+            );
+            fileRepository.save(fileEntity);
+
+            return new FileUploadResponse(
+                    fileEntity.getId(),
+                    fileEntity.getStoredPath(),
+                    fileEntity.getOriginalFilename(),
+                    fileEntity.getSize(),
+                    fileEntity.getContentType(),
+                    fileEntity.getCreatedAt()
+            );
+        } catch (IOException e) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_UPLOAD_FAILED);
+        }
+    }
+
+    private void validateFile(MultipartFile file) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_SIZE_EXCEEDED);
+        }
+
+        String extension = getExtension(file.getOriginalFilename());
+        if (BLOCKED_EXTENSIONS.contains(extension)) {
+            throw new ServiceErrorException(FileExceptionEnum.BLOCKED_FILE_EXTENSION);
+        }
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new ServiceErrorException(FileExceptionEnum.INVALID_FILE_EXTENSION);
+        }
+    }
+
+    private String getExtension(String filename) {
+        if (filename == null || !filename.contains(".")) {
+            throw new ServiceErrorException(FileExceptionEnum.INVALID_FILE_EXTENSION);
+        }
+        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+    }
 }

@@ -21,31 +21,31 @@ public class File extends BaseEntity {
     private Long postId;
 
     @Column(nullable = false)
-    private String originalName;    // 원본 파일명
+    private String originalFilename;    // 원본 파일명
 
     @Column(nullable = false)
-    private String storedPath;      // 저장된 경로
+    private String storedPath;          // 저장된 경로
 
     @Column(nullable = false)
-    private Long size;              // 파일 크기
+    private Long size;                  // 파일 크기
 
     @Column(nullable = false)
-    private String type;            // MIME 타입
+    private String contentType;         // MIME 타입
 
     public static File register(
             Long userId,
-            String originalName,
+            String originalFilename,
             String storedPath,
             Long size,
-            String type
+            String contentType
     ) {
         File file = new File();
 
         file.userId = userId;
-        file.originalName = originalName;
+        file.originalFilename = originalFilename;
         file.storedPath = storedPath;
         file.size = size;
-        file.type = type;
+        file.contentType = contentType;
 
         return file;
     }
