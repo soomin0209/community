@@ -3,7 +3,7 @@ package com.community.domain.post.dto.response;
 import java.time.LocalDateTime;
 
 public record PostUpdateResponse(
-        Long postId,
+        Long id,
         String title,
         String content,
         String nickname,
