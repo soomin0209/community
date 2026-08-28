@@ -5,7 +5,7 @@ import com.community.domain.post.enums.PostType;
 import java.time.LocalDateTime;
 
 public record PostCreateResponse(
-        Long postId,
+        Long id,
         String title,
         String content,
         String nickname,
