@@ -4,7 +4,7 @@ import com.community.domain.post.enums.PostType;
 
 import java.time.LocalDateTime;
 
-public record PostGetOneResponse(
+public record GetOnePostResponse(
         Long id,
         String title,
         String content,

@@ -4,12 +4,11 @@ import com.community.domain.post.enums.PostType;
 
 import java.time.LocalDateTime;
 
-public record PostGetAllResponse(
+public record CreatePostResponse(
         Long id,
         String title,
+        String content,
         String nickname,
         PostType type,
-        Boolean isPinned,
-        LocalDateTime createdAt,
-        Long viewCount
+        LocalDateTime createdAt
 ) {}

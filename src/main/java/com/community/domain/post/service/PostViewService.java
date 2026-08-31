@@ -2,7 +2,7 @@ package com.community.domain.post.service;
 
 import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.post.dto.response.PostGetBest5Response;
+import com.community.domain.post.dto.response.GetBestPostsResponse;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +58,7 @@ public class PostViewService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostGetBest5Response> getWeeklyBestPosts() {
+    public List<GetBestPostsResponse> getWeeklyBestPosts() {
         try {
             String weeklyKey = getWeeklyKey();
             Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
@@ -75,7 +75,7 @@ public class PostViewService {
                             return null;
                         }
 
-                        return new PostGetBest5Response(
+                        return new GetBestPostsResponse(
                                 post.getId(),
                                 post.getTitle(),
                                 tuple.getScore() != null ? tuple.getScore().longValue() : 0L,

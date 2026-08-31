@@ -4,13 +4,13 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
-import com.community.domain.post.dto.request.PostCreateRequest;
+import com.community.domain.post.dto.request.CreatePostRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
-import com.community.domain.post.dto.request.PostUpdateRequest;
-import com.community.domain.post.dto.response.PostCreateResponse;
-import com.community.domain.post.dto.response.PostGetAllResponse;
-import com.community.domain.post.dto.response.PostGetOneResponse;
-import com.community.domain.post.dto.response.PostUpdateResponse;
+import com.community.domain.post.dto.request.UpdatePostRequest;
+import com.community.domain.post.dto.response.CreatePostResponse;
+import com.community.domain.post.dto.response.GetAllPostsResponse;
+import com.community.domain.post.dto.response.GetOnePostResponse;
+import com.community.domain.post.dto.response.UpdatePostResponse;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.enums.PostType;
 import com.community.domain.post.exception.PostExceptionEnum;
@@ -43,7 +43,7 @@ public class PostService {
     private final UserRankingService userRankingService;
 
     // 게시물 등록
-    public PostCreateResponse create(Long userId, PostCreateRequest request) {
+    public CreatePostResponse create(Long userId, CreatePostRequest request) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
@@ -56,7 +56,7 @@ public class PostService {
 
         userRankingService.recordPost(user.getId());
 
-        return new PostCreateResponse(
+        return new CreatePostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
@@ -68,7 +68,7 @@ public class PostService {
 
     // 게시물 단건 조회
     @Transactional(readOnly = true)
-    public PostGetOneResponse getOne(Long postId, String clientId) {
+    public GetOnePostResponse getOne(Long postId, String clientId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
@@ -80,7 +80,7 @@ public class PostService {
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
 
-        return new PostGetOneResponse(
+        return new GetOnePostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
@@ -96,8 +96,8 @@ public class PostService {
 
     // 게시물 목록 조회
     @Transactional(readOnly = true)
-    public PageResponse<PostGetAllResponse> getAll(PostPageCondition condition) {
-        Page<PostGetAllResponse> page = postRepository.findPostsWithCondition(
+    public PageResponse<GetAllPostsResponse> getAll(PostPageCondition condition) {
+        Page<GetAllPostsResponse> page = postRepository.findPostsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
                 condition.getSortType(),
                 condition.getKeyword(),
@@ -110,8 +110,8 @@ public class PostService {
 
     // 내 게시물 목록 조회
     @Transactional(readOnly = true)
-    public PageResponse<PostGetAllResponse> getMine(Long userId, PostPageCondition condition) {
-        Page<PostGetAllResponse> page = postRepository.findPostsWithCondition(
+    public PageResponse<GetAllPostsResponse> getMine(Long userId, PostPageCondition condition) {
+        Page<GetAllPostsResponse> page = postRepository.findPostsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
                 condition.getSortType(),
                 condition.getKeyword(),
@@ -123,7 +123,7 @@ public class PostService {
     }
 
     // 게시물 수정
-    public PostUpdateResponse update(Long userId, Long postId, PostUpdateRequest request) {
+    public UpdatePostResponse update(Long userId, Long postId, UpdatePostRequest request) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
@@ -136,7 +136,7 @@ public class PostService {
 
         post.update(request);
 
-        return new PostUpdateResponse(
+        return new UpdatePostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),

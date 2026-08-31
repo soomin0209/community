@@ -4,7 +4,7 @@ import com.community.domain.post.enums.PostType;
 
 import java.time.LocalDateTime;
 
-public record PostPinResponse(
+public record PinPostResponse(
         Long id,
         String title,
         String nickname,

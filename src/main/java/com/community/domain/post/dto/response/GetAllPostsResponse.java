@@ -1,12 +1,15 @@
 package com.community.domain.post.dto.response;
 
+import com.community.domain.post.enums.PostType;
+
 import java.time.LocalDateTime;
 
-public record PostUpdateResponse(
+public record GetAllPostsResponse(
         Long id,
         String title,
-        String content,
         String nickname,
+        PostType type,
+        Boolean isPinned,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        Long viewCount
 ) {}

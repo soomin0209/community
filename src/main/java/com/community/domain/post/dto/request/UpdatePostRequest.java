@@ -2,7 +2,7 @@ package com.community.domain.post.dto.request;
 
 import jakarta.validation.constraints.Size;
 
-public record PostUpdateRequest(
+public record UpdatePostRequest(
         @Size(min = 1, max = 50, message = "제목은 1~50자여야 합니다")
         String title,
 
