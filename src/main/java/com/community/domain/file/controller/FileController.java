@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -41,8 +41,7 @@ public class FileController {
     public ResponseEntity<Resource> download(@PathVariable Long fileId) {
         DownloadFileResponse response = fileService.download(fileId);
 
-        String encodedFilename = URLEncoder.encode(response.originalFilename(), StandardCharsets.UTF_8)
-                .replaceAll("\\+", "%20");
+        String encodedFilename = UriUtils.encode(response.originalFilename(), StandardCharsets.UTF_8);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
