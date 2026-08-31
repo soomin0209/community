@@ -1,6 +1,6 @@
 package com.community.domain.post.repository;
 
-import com.community.domain.post.dto.response.PostGetAllResponse;
+import com.community.domain.post.dto.response.GetAllPostsResponse;
 import com.community.domain.post.enums.PostSearchType;
 import com.community.domain.post.enums.PostSortType;
 import com.community.domain.post.enums.PostType;
@@ -25,7 +25,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<PostGetAllResponse> findPostsWithCondition(
+    public Page<GetAllPostsResponse> findPostsWithCondition(
             Pageable pageable,
             PostSortType sortType,
             String keyword,
@@ -42,15 +42,15 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     // 통합 검색
-    private Page<PostGetAllResponse> searchAllPosts(
+    private Page<GetAllPostsResponse> searchAllPosts(
             Pageable pageable,
             PostSortType sortType,
             String keyword,
             PostSearchType searchType,
             Long userId
     ) {
-        List<PostGetAllResponse> list = queryFactory
-                .select(Projections.constructor(PostGetAllResponse.class,
+        List<GetAllPostsResponse> list = queryFactory
+                .select(Projections.constructor(GetAllPostsResponse.class,
                         post.id,
                         post.title,
                         user.nickname,
@@ -87,17 +87,17 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     // 공지글 분리 조회
-    private Page<PostGetAllResponse> getPostsWithNotices(
+    private Page<GetAllPostsResponse> getPostsWithNotices(
             Pageable pageable,
             PostSortType sortType
     ) {
-        List<PostGetAllResponse> result = new ArrayList<>();
+        List<GetAllPostsResponse> result = new ArrayList<>();
         int noticeCount = 0;
 
         // 첫 페이지에 공지글 추가
         if (pageable.getPageNumber() == 0) {
-            List<PostGetAllResponse> notices = queryFactory
-                    .select(Projections.constructor(PostGetAllResponse.class,
+            List<GetAllPostsResponse> notices = queryFactory
+                    .select(Projections.constructor(GetAllPostsResponse.class,
                             post.id,
                             post.title,
                             user.nickname,
@@ -123,8 +123,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         // 공지글 제외 게시물 조회
         int limit = pageable.getPageSize() - noticeCount;
 
-        List<PostGetAllResponse> posts = queryFactory
-                .select(Projections.constructor(PostGetAllResponse.class,
+        List<GetAllPostsResponse> posts = queryFactory
+                .select(Projections.constructor(GetAllPostsResponse.class,
                         post.id,
                         post.title,
                         user.nickname,

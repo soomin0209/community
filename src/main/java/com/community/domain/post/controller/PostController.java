@@ -4,9 +4,9 @@ import com.community.common.annotation.Idempotent;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.dto.PageResponse;
-import com.community.domain.post.dto.request.PostCreateRequest;
+import com.community.domain.post.dto.request.CreatePostRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
-import com.community.domain.post.dto.request.PostUpdateRequest;
+import com.community.domain.post.dto.request.UpdatePostRequest;
 import com.community.domain.post.dto.response.*;
 import com.community.domain.post.service.PostService;
 import com.community.domain.post.service.PostViewService;
@@ -31,9 +31,9 @@ public class PostController {
     // 게시물 등록
     @Idempotent
     @PostMapping
-    public ResponseEntity<BaseResponse<PostCreateResponse>> create(
+    public ResponseEntity<BaseResponse<CreatePostResponse>> create(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody PostCreateRequest request
+            @Valid @RequestBody CreatePostRequest request
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
@@ -42,7 +42,7 @@ public class PostController {
 
     // 게시물 단건 조회
     @GetMapping("/{postId}")
-    public ResponseEntity<BaseResponse<PostGetOneResponse>> getOne(
+    public ResponseEntity<BaseResponse<GetOnePostResponse>> getOne(
             @PathVariable Long postId,
             HttpServletRequest request
     ) {
@@ -73,7 +73,7 @@ public class PostController {
 
     // 게시물 목록 조회
     @GetMapping
-    public ResponseEntity<BaseResponse<PageResponse<PostGetAllResponse>>> getAll(
+    public ResponseEntity<BaseResponse<PageResponse<GetAllPostsResponse>>> getAll(
             @Valid @ModelAttribute PostPageCondition condition
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
@@ -82,7 +82,7 @@ public class PostController {
 
     // 내 게시물 목록 조회
     @GetMapping("/my")
-    public ResponseEntity<BaseResponse<PageResponse<PostGetAllResponse>>> getMine(
+    public ResponseEntity<BaseResponse<PageResponse<GetAllPostsResponse>>> getMine(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @ModelAttribute PostPageCondition condition
     ) {
@@ -93,7 +93,7 @@ public class PostController {
 
     // 주간 인기 게시물 목록 조회 (Top 5)
     @GetMapping("/best")
-    public ResponseEntity<BaseResponse<List<PostGetBest5Response>>> getBest() {
+    public ResponseEntity<BaseResponse<List<GetBestPostsResponse>>> getBest() {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, postViewService.getWeeklyBestPosts()));
     }
@@ -101,10 +101,10 @@ public class PostController {
     // 게시물 수정
     @Idempotent
     @PatchMapping("/{postId}")
-    public ResponseEntity<BaseResponse<PostUpdateResponse>> update(
+    public ResponseEntity<BaseResponse<UpdatePostResponse>> update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
-            @Valid @RequestBody PostUpdateRequest request
+            @Valid @RequestBody UpdatePostRequest request
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(

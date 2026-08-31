@@ -1,12 +1,10 @@
-package com.community.domain.post.dto.response;
+package com.community.domain.comment.dto.response;
 
 import java.time.LocalDateTime;
 
-public record PostUpdateResponse(
+public record UpdateCommentResponse(
         Long id,
-        String title,
         String content,
-        String nickname,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

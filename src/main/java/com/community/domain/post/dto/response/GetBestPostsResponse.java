@@ -1,6 +1,6 @@
 package com.community.domain.post.dto.response;
 
-public record PostGetBest5Response(
+public record GetBestPostsResponse(
         Long id,
         String title,
         Long weeklyViewCount,

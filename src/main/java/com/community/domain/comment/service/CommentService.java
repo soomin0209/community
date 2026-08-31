@@ -3,14 +3,14 @@ package com.community.domain.comment.service;
 import com.community.common.dto.CursorResponse;
 import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.comment.dto.request.CommentCreateRequest;
+import com.community.domain.comment.dto.request.CreateCommentRequest;
 import com.community.domain.comment.dto.request.CommentCursorCondition;
 import com.community.domain.comment.dto.request.CommentPageCondition;
-import com.community.domain.comment.dto.request.CommentUpdateRequest;
-import com.community.domain.comment.dto.response.CommentCreateResponse;
-import com.community.domain.comment.dto.response.CommentGetAllResponse;
-import com.community.domain.comment.dto.response.CommentGetMineResponse;
-import com.community.domain.comment.dto.response.CommentUpdateResponse;
+import com.community.domain.comment.dto.request.UpdateCommentRequest;
+import com.community.domain.comment.dto.response.CreateCommentResponse;
+import com.community.domain.comment.dto.response.GetAllCommentsResponse;
+import com.community.domain.comment.dto.response.GetMyCommentsResponse;
+import com.community.domain.comment.dto.response.UpdateCommentResponse;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.exception.CommentExceptionEnum;
 import com.community.domain.comment.repository.CommentRepository;
@@ -45,7 +45,7 @@ public class CommentService {
     private static final int MAX_DEPTH = 1;
 
     // 댓글 등록
-    public CommentCreateResponse create(Long postId, Long userId, CommentCreateRequest request) {
+    public CreateCommentResponse create(Long postId, Long userId, CreateCommentRequest request) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
@@ -79,7 +79,7 @@ public class CommentService {
 
         userRankingService.recordComment(user.getId());
 
-        return new CommentCreateResponse(
+        return new CreateCommentResponse(
                 comment.getId(),
                 comment.getParentId(),
                 comment.getContent(),
@@ -89,11 +89,11 @@ public class CommentService {
 
     // 댓글 목록 조회
     @Transactional(readOnly = true)
-    public CursorResponse<CommentGetAllResponse> getAll(Long postId, CommentCursorCondition condition) {
+    public CursorResponse<GetAllCommentsResponse> getAll(Long postId, CommentCursorCondition condition) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        List<CommentGetAllResponse> parentList = commentRepository.findParentCommentsWithCursor(
+        List<GetAllCommentsResponse> parentList = commentRepository.findParentCommentsWithCursor(
                 condition.getCursor(),
                 condition.getSize(),
                 post.getId()
@@ -104,23 +104,23 @@ public class CommentService {
         }
 
         boolean hasNext = parentList.size() > condition.getSize();
-        List<CommentGetAllResponse> actualParentList = hasNext ? parentList.subList(0, condition.getSize()) : parentList;
+        List<GetAllCommentsResponse> actualParentList = hasNext ? parentList.subList(0, condition.getSize()) : parentList;
 
         Long nextCursor = hasNext ? actualParentList.getLast().getId() : null;
 
         List<Long> parentIds = actualParentList.stream()
-                .map(CommentGetAllResponse::getId)
+                .map(GetAllCommentsResponse::getId)
                 .toList();
-        List<CommentGetAllResponse> childList = commentRepository.findChildCommentsByParentIds(parentIds);
+        List<GetAllCommentsResponse> childList = commentRepository.findChildCommentsByParentIds(parentIds);
 
-        Map<Long, CommentGetAllResponse> map = new LinkedHashMap<>();
-        for (CommentGetAllResponse parent : actualParentList) {
+        Map<Long, GetAllCommentsResponse> map = new LinkedHashMap<>();
+        for (GetAllCommentsResponse parent : actualParentList) {
             map.put(parent.getId(), parent);
         }
-        for (CommentGetAllResponse child : childList) {
+        for (GetAllCommentsResponse child : childList) {
             map.put(child.getId(), child);
         }
-        for (CommentGetAllResponse child : childList) {
+        for (GetAllCommentsResponse child : childList) {
             if (child.getParentId() != null) {
                 map.get(child.getParentId()).addChild(child);
             }
@@ -131,11 +131,11 @@ public class CommentService {
 
     // 내 댓글 목록 조회
     @Transactional(readOnly = true)
-    public PageResponse<CommentGetMineResponse> getMine(Long userId, CommentPageCondition condition) {
+    public PageResponse<GetMyCommentsResponse> getMine(Long userId, CommentPageCondition condition) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        Page<CommentGetMineResponse> page = commentRepository.findMyCommentsWithCondition(
+        Page<GetMyCommentsResponse> page = commentRepository.findMyCommentsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
                 user.getId()
         );
@@ -144,7 +144,7 @@ public class CommentService {
     }
 
     // 댓글 수정
-    public CommentUpdateResponse update(Long userId, Long commentId, CommentUpdateRequest request) {
+    public UpdateCommentResponse update(Long userId, Long commentId, UpdateCommentRequest request) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
@@ -157,7 +157,7 @@ public class CommentService {
 
         comment.update(request);
 
-        return new CommentUpdateResponse(
+        return new UpdateCommentResponse(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),

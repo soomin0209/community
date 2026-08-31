@@ -1,9 +1,8 @@
 package com.community.domain.post.service;
 
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.post.dto.response.PostPinResponse;
+import com.community.domain.post.dto.response.PinPostResponse;
 import com.community.domain.post.entity.Post;
-import com.community.domain.post.enums.PostType;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.entity.User;
@@ -21,7 +20,7 @@ public class PostAdminService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    public PostPinResponse pin(Long userId, Long postId) {
+    public PinPostResponse pin(Long userId, Long postId) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
         }
@@ -42,7 +41,7 @@ public class PostAdminService {
             post.pin();
         }
 
-        return new PostPinResponse(
+        return new PinPostResponse(
                 post.getId(),
                 post.getTitle(),
                 postWriter.getNickname(),

@@ -3,11 +3,11 @@ package com.community.domain.auth.service;
 import com.community.common.config.security.JwtProvider;
 import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.auth.dto.request.AuthLoginRequest;
-import com.community.domain.auth.dto.response.AuthLoginResponse;
+import com.community.domain.auth.dto.request.LoginRequest;
+import com.community.domain.auth.dto.response.LoginResponse;
 import com.community.domain.auth.exception.AuthExceptionEnum;
-import com.community.domain.auth.dto.request.AuthSignupRequest;
-import com.community.domain.auth.dto.response.AuthSignupResponse;
+import com.community.domain.auth.dto.request.UserSignupRequest;
+import com.community.domain.auth.dto.response.SignupResponse;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserType;
 import com.community.domain.user.exception.UserExceptionEnum;
@@ -40,7 +40,7 @@ public class AuthService {
     private long refreshTokenExpireTime;
 
     // 회원가입
-    public AuthSignupResponse signup(AuthSignupRequest request) {
+    public SignupResponse signup(UserSignupRequest request) {
         if (userRepository.existsByLoginId(request.loginId())) {
             throw new ServiceErrorException(AuthExceptionEnum.DUPLICATED_ID);
         }
@@ -54,11 +54,11 @@ public class AuthService {
         User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserType.USER);
         userRepository.save(user);
 
-        return new AuthSignupResponse(user.getId(), user.getLoginId(), user.getNickname());
+        return new SignupResponse(user.getId(), user.getLoginId(), user.getNickname());
     }
 
     // 로그인
-    public AuthLoginResponse login(AuthLoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByLoginIdAndDeletedAtIsNull(request.loginId()).orElseThrow(
                 () -> new ServiceErrorException(AuthExceptionEnum.INVALID_CREDENTIALS));
 
@@ -80,11 +80,11 @@ public class AuthService {
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
 
-        return new AuthLoginResponse(accessToken, refreshToken);
+        return new LoginResponse(accessToken, refreshToken);
     }
 
     // 토큰 재발급
-    public AuthLoginResponse reissue(String refreshToken) {
+    public LoginResponse reissue(String refreshToken) {
         if (!jwtProvider.validateRefreshToken(refreshToken)) {
             throw new ServiceErrorException(AuthExceptionEnum.INVALID_REFRESH_TOKEN);
         }
@@ -120,7 +120,7 @@ public class AuthService {
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
 
-        return new AuthLoginResponse(newAccessToken, newRefreshToken);
+        return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
     // 로그아웃

@@ -2,7 +2,7 @@ package com.community.domain.user.service;
 
 import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.user.dto.response.UserGetRanking5Response;
+import com.community.domain.user.dto.response.GetUserRankingResponse;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserRankType;
 import com.community.domain.user.repository.UserRepository;
@@ -103,7 +103,7 @@ public class UserRankingService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserGetRanking5Response> getWeeklyUserRanking(UserRankType type) {
+    public List<GetUserRankingResponse> getWeeklyUserRanking(UserRankType type) {
         try {
             String weeklyKey = getWeeklyKey(type.name().toLowerCase());
             Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
@@ -120,7 +120,7 @@ public class UserRankingService {
                             return null;
                         }
 
-                        return new UserGetRanking5Response(
+                        return new GetUserRankingResponse(
                                 user.getId(),
                                 user.getNickname(),
                                 tuple.getScore() != null ? tuple.getScore().longValue() : 0L

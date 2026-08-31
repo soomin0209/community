@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-public record CommentCreateRequest(
+public record CreateCommentRequest(
         @Positive(message = "부모 식별자는 1 이상이어야 합니다")
         Long parentId,
 

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class CommentGetAllResponse {
+public class GetAllCommentsResponse {
     private final Long id;
     private final Long parentId;
     private final String nickname;
@@ -15,9 +15,9 @@ public class CommentGetAllResponse {
     private final String content;
     private final LocalDateTime createdAt;
     private final int depth;
-    private final List<CommentGetAllResponse> children;
+    private final List<GetAllCommentsResponse> children;
 
-    public CommentGetAllResponse(Long id, Long parentId, String nickname, Boolean isPostWriter, String content, LocalDateTime createdAt, int depth) {
+    public GetAllCommentsResponse(Long id, Long parentId, String nickname, Boolean isPostWriter, String content, LocalDateTime createdAt, int depth) {
         this.id = id;
         this.parentId = parentId;
         this.nickname = nickname;
@@ -28,7 +28,7 @@ public class CommentGetAllResponse {
         this.children = new ArrayList<>();
     }
 
-    public void addChild(CommentGetAllResponse child) {
+    public void addChild(GetAllCommentsResponse child) {
         this.children.add(child);
     }
 }

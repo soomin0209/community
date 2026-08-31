@@ -2,7 +2,7 @@ package com.community.domain.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record AuthLoginRequest(
+public record LoginRequest(
         @NotBlank(message = "아이디를 입력해주세요")
         String loginId,
 

@@ -1,8 +1,8 @@
 package com.community.domain.auth.service;
 
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.auth.dto.request.AuthAdminSignupRequest;
-import com.community.domain.auth.dto.response.AuthSignupResponse;
+import com.community.domain.auth.dto.request.AdminSignupRequest;
+import com.community.domain.auth.dto.response.SignupResponse;
 import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserType;
@@ -25,7 +25,7 @@ public class AuthAdminService {
     private String adminKey;
 
     // 관리자 회원가입
-    public AuthSignupResponse signup(AuthAdminSignupRequest request) {
+    public SignupResponse signup(AdminSignupRequest request) {
         if (!adminKey.equals(request.adminKey())) {
             throw new ServiceErrorException(AuthExceptionEnum.INVALID_ADMIN_KEY);
         }
@@ -43,6 +43,6 @@ public class AuthAdminService {
         User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserType.ADMIN);
         userRepository.save(user);
 
-        return new AuthSignupResponse(user.getId(), user.getLoginId(), user.getNickname());
+        return new SignupResponse(user.getId(), user.getLoginId(), user.getNickname());
     }
 }

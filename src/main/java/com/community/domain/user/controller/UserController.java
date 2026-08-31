@@ -3,8 +3,8 @@ package com.community.domain.user.controller;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.domain.auth.service.AuthService;
-import com.community.domain.user.dto.request.UserUpdateNicknameRequest;
-import com.community.domain.user.dto.request.UserUpdatePasswordRequest;
+import com.community.domain.user.dto.request.UpdateUserNicknameRequest;
+import com.community.domain.user.dto.request.UpdateUserPasswordRequest;
 import com.community.domain.user.dto.response.*;
 import com.community.domain.user.enums.UserRankType;
 import com.community.domain.user.service.UserRankingService;
@@ -32,14 +32,14 @@ public class UserController {
 
     // 프로필 조회
     @GetMapping("/{userId}")
-    public ResponseEntity<BaseResponse<UserGetOneResponse>> getOne(@PathVariable Long userId) {
+    public ResponseEntity<BaseResponse<GetOneUserResponse>> getOne(@PathVariable Long userId) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, userService.getOne(userId)));
     }
 
     // 마이페이지 조회
     @GetMapping("/me")
-    public ResponseEntity<BaseResponse<UserGetMineResponse>> getMine(
+    public ResponseEntity<BaseResponse<GetMypageResponse>> getMine(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long userId = userDetails.getUserId();
@@ -49,7 +49,7 @@ public class UserController {
 
     // 주간 사용자 랭킹 조회 (Top 5)
     @GetMapping("/ranking")
-    public ResponseEntity<BaseResponse<List<UserGetRanking5Response>>> getRanking(
+    public ResponseEntity<BaseResponse<List<GetUserRankingResponse>>> getRanking(
             @RequestParam(defaultValue = "COMMENT") UserRankType type
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
@@ -58,9 +58,9 @@ public class UserController {
 
     // 닉네임 변경
     @PatchMapping("/nickname")
-    public ResponseEntity<BaseResponse<UserUpdateNicknameResponse>> updateNickname(
+    public ResponseEntity<BaseResponse<UpdateUserNicknameResponse>> updateNickname(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody UserUpdateNicknameRequest request
+            @Valid @RequestBody UpdateUserNicknameRequest request
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
@@ -69,9 +69,9 @@ public class UserController {
 
     // 비밀번호 변경
     @PatchMapping("/password")
-    public ResponseEntity<BaseResponse<UserUpdatePasswordResponse>> updatePassword(
+    public ResponseEntity<BaseResponse<UpdateUserPasswordResponse>> updatePassword(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody UserUpdatePasswordRequest request
+            @Valid @RequestBody UpdateUserPasswordRequest request
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
