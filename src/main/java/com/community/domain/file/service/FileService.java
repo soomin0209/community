@@ -1,6 +1,7 @@
 package com.community.domain.file.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.file.dto.response.DownloadFileResponse;
 import com.community.domain.file.dto.response.GetAllFilesResponse;
 import com.community.domain.file.dto.response.UploadFileResponse;
 import com.community.domain.file.entity.File;
@@ -9,6 +10,8 @@ import com.community.domain.file.repository.FileRepository;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +46,7 @@ public class FileService {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
     private static final int MAX_FILES_COUNT = 10;
 
+    // 파일 업로드
     public List<UploadFileResponse> upload(Long userId, List<MultipartFile> files) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
@@ -63,6 +67,7 @@ public class FileService {
         return responses;
     }
 
+    // 파일 첨부
     public void attachFiles(Long userId, Long postId, List<Long> fileIds) {
         if (fileIds == null || fileIds.isEmpty()) {
             return;
@@ -89,6 +94,7 @@ public class FileService {
         }
     }
 
+    // 파일 목록 조회
     @Transactional(readOnly = true)
     public List<GetAllFilesResponse> getAll(Long postId) {
         List<File> files = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
@@ -108,6 +114,27 @@ public class FileService {
         return responses;
     }
 
+    // 파일 다운로드
+    public DownloadFileResponse download(Long fileId) {
+        File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
+                () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+
+        Path path = Paths.get(file.getStoredPath());
+        if (!Files.exists(path)) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
+        }
+
+        Resource resource = new FileSystemResource(path);
+
+        return new DownloadFileResponse(
+                resource,
+                file.getOriginalFilename(),
+                file.getSize(),
+                file.getContentType()
+        );
+    }
+
+    // 파일 저장
     private UploadFileResponse uploadSingle(Long userId, MultipartFile file) {
         validateFile(file);
 
@@ -122,7 +149,7 @@ public class FileService {
             File fileEntity = File.register(
                     userId,
                     file.getOriginalFilename(),
-                    "/" + UPLOAD_DIR + storedFileName,
+                    UPLOAD_DIR + storedFileName,
                     file.getSize(),
                     file.getContentType()
             );
@@ -141,6 +168,7 @@ public class FileService {
         }
     }
 
+    // 파일 검증
     private void validateFile(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new ServiceErrorException(FileExceptionEnum.FILE_SIZE_EXCEEDED);
@@ -155,6 +183,7 @@ public class FileService {
         }
     }
 
+    // 확장자 추출
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
             throw new ServiceErrorException(FileExceptionEnum.INVALID_FILE_EXTENSION);
