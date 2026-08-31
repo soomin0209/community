@@ -150,6 +150,8 @@ public class PostService {
 
         post.update(request);
 
+        fileService.updateFiles(user.getId(), post.getId(), request.fileIds());
+
         return new UpdatePostResponse(
                 post.getId(),
                 post.getTitle(),

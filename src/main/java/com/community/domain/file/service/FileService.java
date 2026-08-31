@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,33 +68,6 @@ public class FileService {
         return responses;
     }
 
-    // 파일 첨부
-    public void attachFiles(Long userId, Long postId, List<Long> fileIds) {
-        if (fileIds == null || fileIds.isEmpty()) {
-            return;
-        }
-
-        List<File> files = new ArrayList<>();
-        for (Long fileId : fileIds) {
-            File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
-                    () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
-
-            if (!file.getUserId().equals(userId)) {
-                throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
-            }
-
-            if (file.getPostId() != null) {
-                throw new ServiceErrorException(FileExceptionEnum.FILE_ALREADY_ATTACHED);
-            }
-
-            files.add(file);
-        }
-
-        for (File file : files) {
-            file.attachToPost(postId);
-        }
-    }
-
     // 파일 목록 조회
     @Transactional(readOnly = true)
     public List<GetAllFilesResponse> getAll(Long postId) {
@@ -132,6 +106,60 @@ public class FileService {
                 file.getSize(),
                 file.getContentType()
         );
+    }
+
+    // 파일 첨부
+    public void attachFiles(Long userId, Long postId, List<Long> fileIds) {
+        if (fileIds == null || fileIds.isEmpty()) {
+            return;
+        }
+
+        List<File> files = new ArrayList<>();
+        for (Long fileId : fileIds) {
+            File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
+                    () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+
+            if (!file.getUserId().equals(userId)) {
+                throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
+            }
+
+            if (file.getPostId() != null) {
+                throw new ServiceErrorException(FileExceptionEnum.FILE_ALREADY_ATTACHED);
+            }
+
+            files.add(file);
+        }
+
+        for (File file : files) {
+            file.attachToPost(postId);
+        }
+    }
+
+    // 파일 첨부 해제
+    public void detachFiles(Long postId) {
+        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+
+        for (File attachedFile : attachedFiles) {
+            attachedFile.detachFromPost();
+        }
+    }
+
+    // 첨부된 파일 수정
+    public void updateFiles(Long userId, Long postId, List<Long> newFileIds) {
+        List<File> currentFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<Long> currentFileIds = currentFiles.stream()
+                .map(File::getId)
+                .toList();
+
+        List<Long> requestFileIds = newFileIds != null ? newFileIds : List.of();
+        if (new HashSet<>(currentFileIds).equals(new HashSet<>(requestFileIds))) {
+            return;
+        }
+
+        detachFiles(postId);
+        if (!requestFileIds.isEmpty()) {
+            attachFiles(userId, postId, requestFileIds);
+        }
     }
 
     // 파일 삭제
