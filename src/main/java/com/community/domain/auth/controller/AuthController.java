@@ -4,10 +4,10 @@ import com.community.common.annotation.Idempotent;
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.auth.dto.request.AuthLoginRequest;
-import com.community.domain.auth.dto.request.AuthSignupRequest;
-import com.community.domain.auth.dto.response.AuthLoginResponse;
-import com.community.domain.auth.dto.response.AuthSignupResponse;
+import com.community.domain.auth.dto.request.LoginRequest;
+import com.community.domain.auth.dto.request.UserSignupRequest;
+import com.community.domain.auth.dto.response.LoginResponse;
+import com.community.domain.auth.dto.response.SignupResponse;
 import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -34,18 +34,18 @@ public class AuthController {
     // 회원가입
     @Idempotent
     @PostMapping("/signup")
-    public ResponseEntity<BaseResponse<AuthSignupResponse>> signup(@Valid @RequestBody AuthSignupRequest request) {
+    public ResponseEntity<BaseResponse<SignupResponse>> signup(@Valid @RequestBody UserSignupRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
                 HttpStatus.CREATED.name(), null, authService.signup(request)));
     }
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<BaseResponse<AuthLoginResponse>> login(
-            @Valid @RequestBody AuthLoginRequest request,
+    public ResponseEntity<BaseResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
-        AuthLoginResponse loginResponse = authService.login(request);
+        LoginResponse loginResponse = authService.login(request);
 
         Cookie cookie = new Cookie("refreshToken", loginResponse.refreshToken());
         cookie.setHttpOnly(true);
@@ -56,12 +56,12 @@ public class AuthController {
         response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, new AuthLoginResponse(loginResponse.accessToken(), null)));
+                HttpStatus.OK.name(), null, new LoginResponse(loginResponse.accessToken(), null)));
     }
 
     // 토큰 재발급
     @PostMapping("/reissue")
-    public ResponseEntity<BaseResponse<AuthLoginResponse>> reissue(
+    public ResponseEntity<BaseResponse<LoginResponse>> reissue(
             @CookieValue(value = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response
     ) {
@@ -69,7 +69,7 @@ public class AuthController {
             throw new ServiceErrorException(AuthExceptionEnum.REFRESH_TOKEN_NOT_FOUND);
         }
 
-        AuthLoginResponse reissueResponse = authService.reissue(refreshToken);
+        LoginResponse reissueResponse = authService.reissue(refreshToken);
 
         Cookie newCookie = new Cookie("refreshToken", reissueResponse.refreshToken());
         newCookie.setHttpOnly(true);
@@ -80,7 +80,7 @@ public class AuthController {
         response.addCookie(newCookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, new AuthLoginResponse(reissueResponse.accessToken(), null)));
+                HttpStatus.OK.name(), null, new LoginResponse(reissueResponse.accessToken(), null)));
     }
 
     // 로그아웃
