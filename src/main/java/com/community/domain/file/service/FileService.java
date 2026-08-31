@@ -134,6 +134,22 @@ public class FileService {
         );
     }
 
+    // 파일 삭제
+    public void delete(Long userId, Long fileId) {
+        if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
+            throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
+        }
+
+        File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
+                () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+
+        if (!file.getUserId().equals(userId)) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
+        }
+
+        file.delete();
+    }
+
     // 파일 저장
     private UploadFileResponse uploadSingle(Long userId, MultipartFile file) {
         validateFile(file);

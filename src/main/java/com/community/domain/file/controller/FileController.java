@@ -50,4 +50,16 @@ public class FileController {
                 .contentLength(response.size())
                 .body(response.resource());
     }
+
+    // 파일 삭제
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<BaseResponse<Void>> delete(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long fileId
+    ) {
+        Long userId = userDetails.getUserId();
+        fileService.delete(userId, fileId);
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, null));
+    }
 }
