@@ -2,9 +2,10 @@ package com.community.domain.comment.dto.response;
 
 import java.time.LocalDateTime;
 
-public record CommentUpdateResponse(
+public record GetMyCommentsResponse(
         Long id,
+        Long postId,
+        String postTitle,
         String content,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime createdAt
 ) {}

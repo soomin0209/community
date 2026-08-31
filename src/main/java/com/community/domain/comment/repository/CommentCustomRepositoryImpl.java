@@ -1,7 +1,7 @@
 package com.community.domain.comment.repository;
 
-import com.community.domain.comment.dto.response.CommentGetAllResponse;
-import com.community.domain.comment.dto.response.CommentGetMineResponse;
+import com.community.domain.comment.dto.response.GetAllCommentsResponse;
+import com.community.domain.comment.dto.response.GetMyCommentsResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,9 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<CommentGetAllResponse> findParentCommentsWithCursor(Long cursor, int size, Long postId) {
+    public List<GetAllCommentsResponse> findParentCommentsWithCursor(Long cursor, int size, Long postId) {
         return queryFactory
-                .select(Projections.constructor(CommentGetAllResponse.class,
+                .select(Projections.constructor(GetAllCommentsResponse.class,
                         comment.id,
                         comment.parentId,
                         user.nickname,
@@ -46,11 +46,11 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     }
 
     @Override
-    public List<CommentGetAllResponse> findChildCommentsByParentIds(List<Long> parentIds) {
+    public List<GetAllCommentsResponse> findChildCommentsByParentIds(List<Long> parentIds) {
         if (parentIds == null || parentIds.isEmpty()) return List.of();
 
         return queryFactory
-                .select(Projections.constructor(CommentGetAllResponse.class,
+                .select(Projections.constructor(GetAllCommentsResponse.class,
                         comment.id,
                         comment.parentId,
                         user.nickname,
@@ -70,9 +70,9 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     }
 
     @Override
-    public Page<CommentGetMineResponse> findMyCommentsWithCondition(Pageable pageable, Long userId) {
-        List<CommentGetMineResponse> list = queryFactory
-                .select(Projections.constructor(CommentGetMineResponse.class,
+    public Page<GetMyCommentsResponse> findMyCommentsWithCondition(Pageable pageable, Long userId) {
+        List<GetMyCommentsResponse> list = queryFactory
+                .select(Projections.constructor(GetMyCommentsResponse.class,
                         comment.id,
                         post.id,
                         post.title,

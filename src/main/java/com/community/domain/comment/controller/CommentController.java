@@ -4,14 +4,14 @@ import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
 import com.community.common.dto.CursorResponse;
 import com.community.common.dto.PageResponse;
-import com.community.domain.comment.dto.request.CommentCreateRequest;
+import com.community.domain.comment.dto.request.CreateCommentRequest;
 import com.community.domain.comment.dto.request.CommentCursorCondition;
 import com.community.domain.comment.dto.request.CommentPageCondition;
-import com.community.domain.comment.dto.request.CommentUpdateRequest;
-import com.community.domain.comment.dto.response.CommentCreateResponse;
-import com.community.domain.comment.dto.response.CommentGetAllResponse;
-import com.community.domain.comment.dto.response.CommentGetMineResponse;
-import com.community.domain.comment.dto.response.CommentUpdateResponse;
+import com.community.domain.comment.dto.request.UpdateCommentRequest;
+import com.community.domain.comment.dto.response.CreateCommentResponse;
+import com.community.domain.comment.dto.response.GetAllCommentsResponse;
+import com.community.domain.comment.dto.response.GetMyCommentsResponse;
+import com.community.domain.comment.dto.response.UpdateCommentResponse;
 import com.community.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +28,10 @@ public class CommentController {
 
     // 댓글 등록
     @PostMapping("/api/posts/{postId}/comments")
-    public ResponseEntity<BaseResponse<CommentCreateResponse>> create(
+    public ResponseEntity<BaseResponse<CreateCommentResponse>> create(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
-            @Valid @RequestBody CommentCreateRequest request
+            @Valid @RequestBody CreateCommentRequest request
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(
@@ -40,7 +40,7 @@ public class CommentController {
 
     // 댓글 목록 조회
     @GetMapping("/api/posts/{postId}/comments")
-    public ResponseEntity<BaseResponse<CursorResponse<CommentGetAllResponse>>> getAll(
+    public ResponseEntity<BaseResponse<CursorResponse<GetAllCommentsResponse>>> getAll(
             @PathVariable Long postId,
             @Valid @ModelAttribute CommentCursorCondition condition
     ) {
@@ -50,7 +50,7 @@ public class CommentController {
 
     // 내 댓글 목록 조회
     @GetMapping("/api/comments/my")
-    public ResponseEntity<BaseResponse<PageResponse<CommentGetMineResponse>>> getMine(
+    public ResponseEntity<BaseResponse<PageResponse<GetMyCommentsResponse>>> getMine(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @ModelAttribute CommentPageCondition condition
     ) {
@@ -61,10 +61,10 @@ public class CommentController {
 
     // 댓글 수정
     @PatchMapping("/api/comments/{commentId}")
-    public ResponseEntity<BaseResponse<CommentUpdateResponse>> update(
+    public ResponseEntity<BaseResponse<UpdateCommentResponse>> update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long commentId,
-            @Valid @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody UpdateCommentRequest request
     ) {
         Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
