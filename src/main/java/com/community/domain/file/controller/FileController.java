@@ -2,11 +2,10 @@ package com.community.domain.file.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
-import com.community.domain.file.dto.response.FileUploadResponse;
+import com.community.domain.file.dto.response.UploadFileResponse;
 import com.community.domain.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,7 @@ public class FileController {
     private final FileService fileService;
 
     @PostMapping
-    public ResponseEntity<BaseResponse<List<FileUploadResponse>>> upload(
+    public ResponseEntity<BaseResponse<List<UploadFileResponse>>> upload(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart("files") List<MultipartFile> files
     ) {

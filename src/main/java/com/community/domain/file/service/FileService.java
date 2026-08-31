@@ -1,8 +1,8 @@
 package com.community.domain.file.service;
 
 import com.community.common.exception.ServiceErrorException;
-import com.community.domain.file.dto.response.FileGetAllResponse;
-import com.community.domain.file.dto.response.FileUploadResponse;
+import com.community.domain.file.dto.response.GetAllFilesResponse;
+import com.community.domain.file.dto.response.UploadFileResponse;
 import com.community.domain.file.entity.File;
 import com.community.domain.file.exception.FileExceptionEnum;
 import com.community.domain.file.repository.FileRepository;
@@ -43,7 +43,7 @@ public class FileService {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
     private static final int MAX_FILES_COUNT = 10;
 
-    public List<FileUploadResponse> upload(Long userId, List<MultipartFile> files) {
+    public List<UploadFileResponse> upload(Long userId, List<MultipartFile> files) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
         }
@@ -52,10 +52,10 @@ public class FileService {
             throw new ServiceErrorException(FileExceptionEnum.FILE_COUNT_EXCEEDED);
         }
 
-        List<FileUploadResponse> responses = new ArrayList<>();
+        List<UploadFileResponse> responses = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
-                FileUploadResponse response = uploadSingle(userId, file);
+                UploadFileResponse response = uploadSingle(userId, file);
                 responses.add(response);
             }
         }
@@ -90,12 +90,12 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<FileGetAllResponse> getAll(Long postId) {
+    public List<GetAllFilesResponse> getAll(Long postId) {
         List<File> files = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
 
-        List<FileGetAllResponse> responses = new ArrayList<>();
+        List<GetAllFilesResponse> responses = new ArrayList<>();
         for (File file : files) {
-            FileGetAllResponse response = new FileGetAllResponse(
+            GetAllFilesResponse response = new GetAllFilesResponse(
                     file.getId(),
                     file.getStoredPath(),
                     file.getOriginalFilename(),
@@ -108,7 +108,7 @@ public class FileService {
         return responses;
     }
 
-    private FileUploadResponse uploadSingle(Long userId, MultipartFile file) {
+    private UploadFileResponse uploadSingle(Long userId, MultipartFile file) {
         validateFile(file);
 
         try {
@@ -128,7 +128,7 @@ public class FileService {
             );
             fileRepository.save(fileEntity);
 
-            return new FileUploadResponse(
+            return new UploadFileResponse(
                     fileEntity.getId(),
                     fileEntity.getStoredPath(),
                     fileEntity.getOriginalFilename(),
