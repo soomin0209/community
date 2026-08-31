@@ -2,7 +2,6 @@ package com.community.domain.user.service;
 
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.auth.exception.AuthExceptionEnum;
-import com.community.domain.post.repository.PostRepository;
 import com.community.domain.user.dto.request.UpdateUserNicknameRequest;
 import com.community.domain.user.dto.request.UpdateUserPasswordRequest;
 import com.community.domain.user.dto.response.GetMypageResponse;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
 
     // 프로필 조회

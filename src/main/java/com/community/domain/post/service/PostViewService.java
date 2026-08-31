@@ -94,6 +94,6 @@ public class PostViewService {
         LocalDate now = LocalDate.now();
         int year = now.get(WeekFields.ISO.weekBasedYear());
         int weekNumber = now.get(WeekFields.ISO.weekOfWeekBasedYear());
-        return WEEKLY_KEY_PREFIX + ":" + year + ":" + weekNumber;
+        return WEEKLY_KEY_PREFIX + year + ":" + weekNumber;
     }
 }

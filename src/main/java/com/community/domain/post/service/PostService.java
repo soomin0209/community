@@ -4,6 +4,10 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
+import com.community.domain.file.dto.response.GetAllFilesResponse;
+import com.community.domain.file.entity.File;
+import com.community.domain.file.repository.FileRepository;
+import com.community.domain.file.service.FileService;
 import com.community.domain.post.dto.request.CreatePostRequest;
 import com.community.domain.post.dto.request.PostPageCondition;
 import com.community.domain.post.dto.request.UpdatePostRequest;
@@ -41,6 +45,8 @@ public class PostService {
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
     private final UserRankingService userRankingService;
+    private final FileService fileService;
+    private final FileRepository fileRepository;
 
     // 게시물 등록
     public CreatePostResponse create(Long userId, CreatePostRequest request) {
@@ -54,6 +60,10 @@ public class PostService {
         Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
         postRepository.save(post);
 
+        fileService.attachFiles(user.getId(), post.getId(), request.fileIds());
+
+        List<GetAllFilesResponse> files = fileService.getAll(post.getId());
+
         userRankingService.recordPost(user.getId());
 
         return new CreatePostResponse(
@@ -62,7 +72,8 @@ public class PostService {
                 post.getContent(),
                 user.getNickname(),
                 post.getType(),
-                post.getCreatedAt()
+                post.getCreatedAt(),
+                files
         );
     }
 
@@ -80,6 +91,8 @@ public class PostService {
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
 
+        List<GetAllFilesResponse> files = fileService.getAll(post.getId());
+
         return new GetOnePostResponse(
                 post.getId(),
                 post.getTitle(),
@@ -90,7 +103,8 @@ public class PostService {
                 post.getUpdatedAt(),
                 post.getViewCount(),
                 likeCount,
-                dislikeCount
+                dislikeCount,
+                files
         );
     }
 
@@ -136,6 +150,8 @@ public class PostService {
 
         post.update(request);
 
+        fileService.updateFiles(user.getId(), post.getId(), request.fileIds());
+
         return new UpdatePostResponse(
                 post.getId(),
                 post.getTitle(),
@@ -168,6 +184,12 @@ public class PostService {
 
             comment.delete();
             if (commentUser != null) commentUser.decreaseCommentCount();
+        }
+
+        // 첨부된 파일도 삭제 처리
+        List<File> fileList = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+        for (File file : fileList) {
+            file.delete();
         }
     }
 }
