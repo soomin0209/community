@@ -37,4 +37,8 @@ public class Category {
 
         return category;
     }
+
+    public void update(String name) {
+        this.name = name;
+    }
 }
