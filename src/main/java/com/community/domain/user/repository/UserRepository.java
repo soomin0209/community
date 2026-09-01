@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long>, UserCustomRep
     boolean existsByIdAndDeletedAtIsNull(Long userId);
 
     List<User> findAllByDeletedAtIsNull();
+
+    List<User> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
 }
