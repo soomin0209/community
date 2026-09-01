@@ -88,6 +88,7 @@ public class PostService {
 
         postViewService.record(postId, clientId);
 
+        Long commentCount = commentRepository.countByPostIdAndDeletedAtIsNull(post.getId());
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
 
@@ -101,6 +102,7 @@ public class PostService {
                 post.getType(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
+                commentCount,
                 post.getViewCount(),
                 likeCount,
                 dislikeCount,

@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.community.domain.comment.entity.QComment.comment;
 import static com.community.domain.post.entity.QPost.post;
 import static com.community.domain.user.entity.QUser.user;
 
@@ -57,14 +58,17 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.type,
                         post.isPinned,
                         post.createdAt,
+                        comment.count(),
                         post.viewCount))
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
+                .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                 .where(
                         post.deletedAt.isNull(),
                         searchCondition(keyword, searchType),
                         userIdCondition(userId)
                 )
+                .groupBy(post.id)
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -104,13 +108,16 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                             post.type,
                             post.isPinned,
                             post.createdAt,
+                            comment.count(),
                             post.viewCount))
                     .from(post)
                     .join(user).on(post.userId.eq(user.id))
+                    .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                     .where(
                             post.deletedAt.isNull(),
                             post.isPinned.isTrue()
                     )
+                    .groupBy(post.id)
                     .orderBy(post.pinnedAt.desc())
                     .limit(10)
                     .fetch();
@@ -130,13 +137,16 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.type,
                         post.isPinned,
                         post.createdAt,
+                        comment.count(),
                         post.viewCount))
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
+                .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                 .where(
                         post.deletedAt.isNull(),
                         post.isPinned.isFalse()
                 )
+                .groupBy(post.id)
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
                 .limit(limit)
