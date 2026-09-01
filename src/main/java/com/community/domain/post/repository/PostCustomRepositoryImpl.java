@@ -32,15 +32,16 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
             PostSortType sortType,
             String keyword,
             PostSearchType searchType,
-            Long userId
+            Long userId,
+            Long boardId
     ) {
         // 검색이거나 내 게시물 조회일 경우
         if (keyword != null && !keyword.isBlank() || userId != null) {
-            return searchAllPosts(pageable, sortType, keyword, searchType, userId);
+            return searchAllPosts(pageable, sortType, keyword, searchType, userId, boardId);
         }
 
         // 일반 목록 조회일 경우
-        return getPostsWithPinned(pageable, sortType);
+        return getPostsWithPinned(pageable, sortType, boardId);
     }
 
     // 통합 검색
@@ -49,11 +50,13 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
             PostSortType sortType,
             String keyword,
             PostSearchType searchType,
-            Long userId
+            Long userId,
+            Long boardId
     ) {
         List<GetAllPostsResponse> list = queryFactory
                 .select(Projections.constructor(GetAllPostsResponse.class,
                         post.id,
+                        post.boardId,
                         post.title,
                         user.nickname,
                         post.type,
@@ -67,7 +70,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .where(
                         post.deletedAt.isNull(),
                         searchCondition(keyword, searchType),
-                        userIdCondition(userId)
+                        userIdCondition(userId),
+                        boardIdCondition(boardId)
                 )
                 .groupBy(post.id)
                 .orderBy(getOrderSpecifier(sortType))
@@ -82,7 +86,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .where(
                         post.deletedAt.isNull(),
                         searchCondition(keyword, searchType),
-                        userIdCondition(userId)
+                        userIdCondition(userId),
+                        boardIdCondition(boardId)
                 )
                 .fetchOne();
 
@@ -94,7 +99,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     // 고정글 분리 조회
     private Page<GetAllPostsResponse> getPostsWithPinned(
             Pageable pageable,
-            PostSortType sortType
+            PostSortType sortType,
+            Long boardId
     ) {
         List<GetAllPostsResponse> result = new ArrayList<>();
         int noticeCount = 0;
@@ -104,6 +110,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
             List<GetAllPostsResponse> pinned = queryFactory
                     .select(Projections.constructor(GetAllPostsResponse.class,
                             post.id,
+                            post.boardId,
                             post.title,
                             user.nickname,
                             post.type,
@@ -133,6 +140,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         List<GetAllPostsResponse> unpinned = queryFactory
                 .select(Projections.constructor(GetAllPostsResponse.class,
                         post.id,
+                        post.boardId,
                         post.title,
                         user.nickname,
                         post.type,
@@ -145,7 +153,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                 .where(
                         post.deletedAt.isNull(),
-                        post.isPinned.isFalse()
+                        post.isPinned.isFalse(),
+                        boardIdCondition(boardId)
                 )
                 .groupBy(post.id)
                 .orderBy(getOrderSpecifier(sortType))
@@ -161,7 +170,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .join(user).on(post.userId.eq(user.id))
                 .where(
                         post.deletedAt.isNull(),
-                        post.isPinned.isFalse()
+                        post.isPinned.isFalse(),
+                        boardIdCondition(boardId)
                 )
                 .fetchOne();
 
@@ -193,5 +203,9 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     private BooleanExpression userIdCondition(Long userId) {
         return userId != null ? post.userId.eq(userId) : null;
+    }
+
+    private BooleanExpression boardIdCondition(Long boardId) {
+        return boardId != null ? post.boardId.eq(boardId) : null;
     }
 }

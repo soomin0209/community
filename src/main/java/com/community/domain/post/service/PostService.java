@@ -59,7 +59,7 @@ public class PostService {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
         }
 
-        Post post = Post.register(user.getId(), request.title(), request.content(), request.type());
+        Post post = Post.register(user.getId(), request.boardId(), request.title(), request.content(), request.type());
         postRepository.save(post);
 
         fileService.attachFiles(user.getId(), post.getId(), request.fileIds());
@@ -70,6 +70,7 @@ public class PostService {
 
         return new CreatePostResponse(
                 post.getId(),
+                post.getBoardId(),
                 post.getTitle(),
                 post.getContent(),
                 user.getNickname(),
@@ -98,6 +99,7 @@ public class PostService {
 
         return new GetOnePostResponse(
                 post.getId(),
+                post.getBoardId(),
                 post.getTitle(),
                 post.getContent(),
                 user.getNickname(),
@@ -120,7 +122,8 @@ public class PostService {
                 condition.getSortType(),
                 condition.getKeyword(),
                 condition.getSearchType(),
-                null
+                null,
+                condition.getBoardId()
         );
 
         return PageResponse.from(page);
@@ -134,7 +137,8 @@ public class PostService {
                 condition.getSortType(),
                 condition.getKeyword(),
                 condition.getSearchType(),
-                userId
+                userId,
+                condition.getBoardId()
         );
 
         return PageResponse.from(page);

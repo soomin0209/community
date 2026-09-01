@@ -12,6 +12,7 @@ public interface PostCustomRepository {
             PostSortType sortType,
             String keyword,
             PostSearchType searchType,
-            Long userId
+            Long userId,
+            Long boardId
     );
 }

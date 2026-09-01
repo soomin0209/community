@@ -20,6 +20,8 @@ public class PostPageCondition {
 
     private PostSortType sortType = PostSortType.LATEST;
 
+    private Long boardId;
+
     private String keyword;
 
     private PostSearchType searchType = PostSearchType.TITLE_CONTENT;

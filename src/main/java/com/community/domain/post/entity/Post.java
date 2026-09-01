@@ -24,6 +24,9 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(nullable = false)
+    private Long boardId;
+
     @Column(nullable = false, length = 50)
     private String title;
 
@@ -44,6 +47,7 @@ public class Post extends BaseEntity {
 
     public static Post register(
             Long userId,
+            Long boardId,
             String title,
             String content,
             PostType type
@@ -51,6 +55,7 @@ public class Post extends BaseEntity {
         Post post = new Post();
 
         post.userId = userId;
+        post.boardId = boardId;
         post.title = title;
         post.content = content;
         if (type != null) {

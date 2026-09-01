@@ -8,6 +8,7 @@ import java.util.List;
 
 public record GetOnePostResponse(
         Long id,
+        Long boardId,
         String title,
         String content,
         String nickname,
