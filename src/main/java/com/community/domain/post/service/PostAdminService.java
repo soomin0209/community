@@ -20,6 +20,8 @@ public class PostAdminService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    private static final int MAX_PINNED_COUNT = 10;
+
     public PinPostResponse pin(Long userId, Long postId) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
@@ -35,7 +37,7 @@ public class PostAdminService {
             post.unpin();
         } else {
             Long pinnedCount = postRepository.countByDeletedAtIsNullAndIsPinnedTrue();
-            if (pinnedCount >= 10) {
+            if (pinnedCount >= MAX_PINNED_COUNT) {
                 throw new ServiceErrorException(PostExceptionEnum.POST_PIN_LIMIT_EXCEEDED);
             }
             post.pin();

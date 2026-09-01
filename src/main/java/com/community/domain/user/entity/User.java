@@ -13,6 +13,14 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
+
+    private static final int GOLD_MIN_VISIT_COUNT = 30;
+    private static final int GOLD_MIN_POST_COUNT = 10;
+    private static final int GOLD_MIN_COMMENT_COUNT = 30;
+    private static final int SILVER_MIN_VISIT_COUNT = 10;
+    private static final int SILVER_MIN_POST_COUNT = 3;
+    private static final int SILVER_MIN_COMMENT_COUNT = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -107,9 +115,13 @@ public class User extends BaseEntity {
     }
 
     public void updateGrade() {
-        if (this.visitCount >= 30 && this.postCount >= 10 && this.commentCount >= 30) {
+        if (this.visitCount >= GOLD_MIN_VISIT_COUNT &&
+                this.postCount >= GOLD_MIN_POST_COUNT &&
+                this.commentCount >= GOLD_MIN_COMMENT_COUNT) {
             this.grade = UserGrade.GOLD;
-        } else if (this.visitCount >= 10 && this.postCount >= 3 && this.commentCount >= 10) {
+        } else if (this.visitCount >= SILVER_MIN_VISIT_COUNT &&
+                this.postCount >= SILVER_MIN_POST_COUNT &&
+                this.commentCount >= SILVER_MIN_COMMENT_COUNT) {
             this.grade = UserGrade.SILVER;
         } else {
             this.grade = UserGrade.BRONZE;

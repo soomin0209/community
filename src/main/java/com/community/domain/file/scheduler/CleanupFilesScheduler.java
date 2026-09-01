@@ -22,12 +22,14 @@ public class CleanupFilesScheduler {
 
     private final FileRepository fileRepository;
 
+    private static final int FILE_RETENTION_DAYS = 30;
+
     @Scheduled(cron = "0 0 4 * * *")
     @Transactional
     public void cleanupOrphanFiles() {
         log.info("[CleanupFilesScheduler] 고아 파일 정리 시작");
 
-        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+        LocalDateTime threshold = LocalDateTime.now().minusDays(FILE_RETENTION_DAYS);
         List<File> orphanList = fileRepository.findByPostIdIsNullAndCreatedAtBefore(threshold);
         int count = deleteFiles(orphanList);
 
@@ -39,7 +41,7 @@ public class CleanupFilesScheduler {
     public void cleanupDeletedFiles() {
         log.info("[CleanupFilesScheduler] 삭제 파일 정리 시작");
 
-        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+        LocalDateTime threshold = LocalDateTime.now().minusDays(FILE_RETENTION_DAYS);
         List<File> deletedList = fileRepository.findByDeletedAtBefore(threshold);
         int count = deleteFiles(deletedList);
 

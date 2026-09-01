@@ -25,6 +25,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    private static final int MAX_PINNED_COUNT = 10;
+
     @Override
     public Page<GetAllPostsResponse> findPostsWithCondition(
             Pageable pageable,
@@ -119,7 +121,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                     )
                     .groupBy(post.id)
                     .orderBy(post.pinnedAt.desc())
-                    .limit(10)
+                    .limit(MAX_PINNED_COUNT)
                     .fetch();
 
             result.addAll(pinned);
