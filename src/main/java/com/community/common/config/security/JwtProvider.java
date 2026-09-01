@@ -18,6 +18,10 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String TOKEN_TYPE_ACCESS = "ACCESS";
+    private static final String TOKEN_TYPE_REFRESH = "REFRESH";
+
     @Value("${jwt.secret.key}")
     private String secretKey;
 
@@ -40,7 +44,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("role", role)
-                .claim("tokenType", "ACCESS")
+                .claim("tokenType", TOKEN_TYPE_ACCESS)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenExpireTime))
                 .signWith(key)
@@ -51,7 +55,7 @@ public class JwtProvider {
         Date now = new Date();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("tokenType", "REFRESH")
+                .claim("tokenType", TOKEN_TYPE_REFRESH)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + refreshTokenExpireTime))
                 .signWith(key)
@@ -72,16 +76,16 @@ public class JwtProvider {
     }
 
     public boolean validateAccessToken(String token) {
-        return validateToken(token, "ACCESS");
+        return validateToken(token, TOKEN_TYPE_ACCESS);
     }
 
     public boolean validateRefreshToken(String token) {
-        return validateToken(token, "REFRESH");
+        return validateToken(token, TOKEN_TYPE_REFRESH);
     }
 
     public String resolveToken(String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            return token.substring(7);
+        if (token != null && token.startsWith(BEARER_PREFIX)) {
+            return token.substring(BEARER_PREFIX.length());
         }
         return null;
     }

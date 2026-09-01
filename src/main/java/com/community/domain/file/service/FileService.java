@@ -114,11 +114,12 @@ public class FileService {
             return;
         }
 
-        List<File> files = new ArrayList<>();
-        for (Long fileId : fileIds) {
-            File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
-                    () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+        List<File> files = fileRepository.findAllByIdInAndDeletedAtIsNull(fileIds);
+        if (files.size() != fileIds.size()) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
+        }
 
+        for (File file : files) {
             if (!file.getUserId().equals(userId)) {
                 throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
             }
@@ -126,8 +127,6 @@ public class FileService {
             if (file.getPostId() != null) {
                 throw new ServiceErrorException(FileExceptionEnum.FILE_ALREADY_ATTACHED);
             }
-
-            files.add(file);
         }
 
         for (File file : files) {

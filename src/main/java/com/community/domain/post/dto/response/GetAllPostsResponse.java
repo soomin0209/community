@@ -11,5 +11,6 @@ public record GetAllPostsResponse(
         PostType type,
         Boolean isPinned,
         LocalDateTime createdAt,
+        Long commentCount,
         Long viewCount
 ) {}

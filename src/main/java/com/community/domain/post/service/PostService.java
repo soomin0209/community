@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +90,7 @@ public class PostService {
 
         postViewService.record(postId, clientId);
 
+        Long commentCount = commentRepository.countByPostIdAndDeletedAtIsNull(post.getId());
         Long likeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.LIKE);
         Long dislikeCount = reactionRepository.countByPostIdAndType(post.getId(), ReactionType.DISLIKE);
 
@@ -101,6 +104,7 @@ public class PostService {
                 post.getType(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
+                commentCount,
                 post.getViewCount(),
                 likeCount,
                 dislikeCount,
@@ -179,8 +183,15 @@ public class PostService {
 
         // 댓글도 삭제 처리
         List<Comment> commentList = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<Long> commentUserIds = commentList.stream()
+                .map(Comment::getUserId)
+                .distinct()
+                .toList();
+        Map<Long, User> commentUserMap = userRepository.findAllByIdInAndDeletedAtIsNull(commentUserIds).stream()
+                .collect(Collectors.toMap(User::getId, user1 -> user1));
+
         for (Comment comment : commentList) {
-            User commentUser = userRepository.findByIdAndDeletedAtIsNull(comment.getUserId()).orElse(null);
+            User commentUser = commentUserMap.get(comment.getUserId());
 
             comment.delete();
             if (commentUser != null) commentUser.decreaseCommentCount();

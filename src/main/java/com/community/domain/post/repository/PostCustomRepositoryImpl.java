@@ -3,7 +3,6 @@ package com.community.domain.post.repository;
 import com.community.domain.post.dto.response.GetAllPostsResponse;
 import com.community.domain.post.enums.PostSearchType;
 import com.community.domain.post.enums.PostSortType;
-import com.community.domain.post.enums.PostType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.community.domain.comment.entity.QComment.comment;
 import static com.community.domain.post.entity.QPost.post;
 import static com.community.domain.user.entity.QUser.user;
 
@@ -23,6 +23,8 @@ import static com.community.domain.user.entity.QUser.user;
 public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     private final JPAQueryFactory queryFactory;
+
+    private static final int MAX_PINNED_COUNT = 10;
 
     @Override
     public Page<GetAllPostsResponse> findPostsWithCondition(
@@ -38,7 +40,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         }
 
         // 일반 목록 조회일 경우
-        return getPostsWithNotices(pageable, sortType);
+        return getPostsWithPinned(pageable, sortType);
     }
 
     // 통합 검색
@@ -57,14 +59,17 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.type,
                         post.isPinned,
                         post.createdAt,
+                        comment.count(),
                         post.viewCount))
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
+                .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                 .where(
                         post.deletedAt.isNull(),
                         searchCondition(keyword, searchType),
                         userIdCondition(userId)
                 )
+                .groupBy(post.id)
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -86,17 +91,17 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         return new PageImpl<>(list, pageable, total);
     }
 
-    // 공지글 분리 조회
-    private Page<GetAllPostsResponse> getPostsWithNotices(
+    // 고정글 분리 조회
+    private Page<GetAllPostsResponse> getPostsWithPinned(
             Pageable pageable,
             PostSortType sortType
     ) {
         List<GetAllPostsResponse> result = new ArrayList<>();
         int noticeCount = 0;
 
-        // 첫 페이지에 공지글 추가
+        // 첫 페이지에 고정글 추가
         if (pageable.getPageNumber() == 0) {
-            List<GetAllPostsResponse> notices = queryFactory
+            List<GetAllPostsResponse> pinned = queryFactory
                     .select(Projections.constructor(GetAllPostsResponse.class,
                             post.id,
                             post.title,
@@ -104,26 +109,28 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                             post.type,
                             post.isPinned,
                             post.createdAt,
+                            comment.count(),
                             post.viewCount))
                     .from(post)
                     .join(user).on(post.userId.eq(user.id))
+                    .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                     .where(
                             post.deletedAt.isNull(),
-                            post.type.eq(PostType.NOTICE),
                             post.isPinned.isTrue()
                     )
+                    .groupBy(post.id)
                     .orderBy(post.pinnedAt.desc())
-                    .limit(10)
+                    .limit(MAX_PINNED_COUNT)
                     .fetch();
 
-            result.addAll(notices);
-            noticeCount = notices.size();
+            result.addAll(pinned);
+            noticeCount = pinned.size();
         }
 
-        // 공지글 제외 게시물 조회
+        // 고정글 제외 게시물 조회
         int limit = pageable.getPageSize() - noticeCount;
 
-        List<GetAllPostsResponse> posts = queryFactory
+        List<GetAllPostsResponse> unpinned = queryFactory
                 .select(Projections.constructor(GetAllPostsResponse.class,
                         post.id,
                         post.title,
@@ -131,19 +138,22 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                         post.type,
                         post.isPinned,
                         post.createdAt,
+                        comment.count(),
                         post.viewCount))
                 .from(post)
                 .join(user).on(post.userId.eq(user.id))
+                .leftJoin(comment).on(comment.postId.eq(post.id).and(comment.deletedAt.isNull()))
                 .where(
                         post.deletedAt.isNull(),
-                        post.type.ne(PostType.NOTICE)   // 공지글 제외
+                        post.isPinned.isFalse()
                 )
+                .groupBy(post.id)
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
                 .limit(limit)
                 .fetch();
 
-        result.addAll(posts);
+        result.addAll(unpinned);
 
         Long total = queryFactory
                 .select(post.count())
@@ -151,7 +161,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .join(user).on(post.userId.eq(user.id))
                 .where(
                         post.deletedAt.isNull(),
-                        post.type.ne(PostType.NOTICE)
+                        post.isPinned.isFalse()
                 )
                 .fetchOne();
 

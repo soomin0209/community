@@ -3,6 +3,7 @@ package com.community.domain.comment.repository;
 import com.community.domain.comment.dto.response.GetAllCommentsResponse;
 import com.community.domain.comment.dto.response.GetMyCommentsResponse;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,16 +27,21 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .select(Projections.constructor(GetAllCommentsResponse.class,
                         comment.id,
                         comment.parentId,
-                        user.nickname,
+                        new CaseBuilder()
+                                .when(comment.deletedAt.isNotNull())
+                                .then("알 수 없음")
+                                .otherwise(user.nickname),
                         comment.userId.eq(post.userId),
-                        comment.content,
+                        new CaseBuilder()
+                                .when(comment.deletedAt.isNotNull())
+                                .then("삭제된 댓글입니다")
+                                .otherwise(comment.content),
                         comment.createdAt,
                         comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
                 .join(post).on(comment.postId.eq(post.id))
                 .where(
-                        comment.deletedAt.isNull(),
                         comment.postId.eq(postId),
                         comment.parentId.isNull(),
                         cursor != null ? comment.id.gt(cursor) : null
@@ -53,16 +59,21 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .select(Projections.constructor(GetAllCommentsResponse.class,
                         comment.id,
                         comment.parentId,
-                        user.nickname,
+                        new CaseBuilder()
+                                .when(comment.deletedAt.isNotNull())
+                                .then("알 수 없음")
+                                .otherwise(user.nickname),
                         comment.userId.eq(post.userId),
-                        comment.content,
+                        new CaseBuilder()
+                                .when(comment.deletedAt.isNotNull())
+                                .then("삭제된 댓글입니다")
+                                .otherwise(comment.content),
                         comment.createdAt,
                         comment.depth))
                 .from(comment)
                 .join(user).on(comment.userId.eq(user.id))
                 .join(post).on(comment.postId.eq(post.id))
                 .where(
-                        comment.deletedAt.isNull(),
                         comment.parentId.in(parentIds)
                 )
                 .orderBy(comment.createdAt.asc())

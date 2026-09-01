@@ -14,6 +14,7 @@ public record GetOnePostResponse(
         PostType type,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
+        Long commentCount,
         Long viewCount,
         Long likeCount,
         Long dislikeCount,
