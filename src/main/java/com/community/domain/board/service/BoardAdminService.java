@@ -8,6 +8,7 @@ import com.community.domain.board.dto.response.UpdateBoardResponse;
 import com.community.domain.board.entity.Board;
 import com.community.domain.board.exception.BoardExceptionEnum;
 import com.community.domain.board.repository.BoardRepository;
+import com.community.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardAdminService {
 
     private final BoardRepository boardRepository;
+    private final PostRepository postRepository;
 
     // 게시판 등록
     public CreateBoardResponse create(CreateBoardRequest request) {
@@ -59,7 +61,9 @@ public class BoardAdminService {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 () -> new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND));
 
-        // TODO 게시판 하위에 게시물 있는지 검증
+        if (postRepository.existsByBoardIdAndDeletedAtIsNull(board.getId())) {
+            throw new ServiceErrorException(BoardExceptionEnum.BOARD_IN_USE);
+        }
 
         boardRepository.delete(board);
     }
