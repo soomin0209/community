@@ -1,7 +1,6 @@
 package com.community.domain.user.scheduler;
 
-import com.community.domain.comment.repository.CommentRepository;
-import com.community.domain.post.repository.PostRepository;
+import com.community.domain.user.dto.UserCountProjection;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -18,8 +19,6 @@ import java.util.List;
 public class UserCountSyncScheduler {
 
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
 
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
@@ -28,22 +27,25 @@ public class UserCountSyncScheduler {
         int postSyncCount = 0;
         int commentSyncCount = 0;
 
-        List<User> userList = userRepository.findAllByDeletedAtIsNull();
+        List<UserCountProjection> userCounts = userRepository.findUserCounts();
+        Map<Long, User> userMap = userRepository.findAllByDeletedAtIsNull().stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
 
-        for (User user : userList) {
-            Long actualPostCount = postRepository.countByUserIdAndDeletedAtIsNull(user.getId());
-            if (!user.getPostCount().equals(actualPostCount)) {
+        for (UserCountProjection projection : userCounts) {
+            User user = userMap.get(projection.userId());
+            if (user == null) continue;
+
+            if (!user.getPostCount().equals(projection.postCount())) {
                 log.warn("[UserCountSyncScheduler] 총 게시물 수 불일치 - userId={}, 현재={}, 실제={}",
-                        user.getId(), user.getPostCount(), actualPostCount);
-                user.setPostCount(actualPostCount);
+                        user.getId(), user.getPostCount(), projection.postCount());
+                user.setPostCount(projection.postCount());
                 postSyncCount++;
             }
 
-            Long actualCommentCount = commentRepository.countByUserIdAndDeletedAtIsNull(user.getId());
-            if (!user.getCommentCount().equals(actualCommentCount)) {
+            if (!user.getCommentCount().equals(projection.commentCount())) {
                 log.warn("[UserCountSyncScheduler] 총 댓글 수 불일치 - userId={}, 현재={}, 실제={}",
-                        user.getId(), user.getCommentCount(), actualCommentCount);
-                user.setCommentCount(actualCommentCount);
+                        user.getId(), user.getCommentCount(), projection.commentCount());
+                user.setCommentCount(projection.commentCount());
                 commentSyncCount++;
             }
         }

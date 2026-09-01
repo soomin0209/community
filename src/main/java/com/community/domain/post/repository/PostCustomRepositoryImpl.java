@@ -3,7 +3,6 @@ package com.community.domain.post.repository;
 import com.community.domain.post.dto.response.GetAllPostsResponse;
 import com.community.domain.post.enums.PostSearchType;
 import com.community.domain.post.enums.PostSortType;
-import com.community.domain.post.enums.PostType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
