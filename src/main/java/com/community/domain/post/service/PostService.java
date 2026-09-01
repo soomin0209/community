@@ -2,6 +2,8 @@ package com.community.domain.post.service;
 
 import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.board.exception.BoardExceptionEnum;
+import com.community.domain.board.repository.BoardRepository;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
 import com.community.domain.file.dto.response.GetAllFilesResponse;
@@ -49,6 +51,7 @@ public class PostService {
     private final UserRankingService userRankingService;
     private final FileService fileService;
     private final FileRepository fileRepository;
+    private final BoardRepository boardRepository;
 
     // 게시물 등록
     public CreatePostResponse create(Long userId, CreatePostRequest request) {
@@ -156,12 +159,19 @@ public class PostService {
             throw new ServiceErrorException(PostExceptionEnum.POST_FORBIDDEN);
         }
 
+        if (request.boardId() != null && !request.boardId().equals(post.getBoardId())) {
+            if (!boardRepository.existsById(request.boardId())) {
+                throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
+            }
+        }
+
         post.update(request);
 
         fileService.updateFiles(user.getId(), post.getId(), request.fileIds());
 
         return new UpdatePostResponse(
                 post.getId(),
+                post.getBoardId(),
                 post.getTitle(),
                 post.getContent(),
                 user.getNickname(),

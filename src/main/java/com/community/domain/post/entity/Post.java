@@ -66,11 +66,12 @@ public class Post extends BaseEntity {
     }
 
     public void update(UpdatePostRequest request) {
-        if (request.title() == null && request.content() == null) {
+        if (request.title() == null && request.content() == null && request.boardId() == null) {
             throw new ServiceErrorException(PostExceptionEnum.POST_UPDATE_NO_CONTENT);
         }
         if (request.title() != null) this.title = request.title();
         if (request.content() != null) this.content = request.content();
+        if (request.boardId() != null) this.boardId = request.boardId();
     }
 
     public void incrementViewCount() {
