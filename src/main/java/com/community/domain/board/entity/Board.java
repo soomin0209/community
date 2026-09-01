@@ -1,4 +1,4 @@
-package com.community.domain.category.entity;
+package com.community.domain.board.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "categories")
+@Table(name = "boards")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class Category {
+public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,12 +30,12 @@ public class Category {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public static Category register(String name) {
-        Category category = new Category();
+    public static Board register(String name) {
+        Board board = new Board();
 
-        category.name = name;
+        board.name = name;
 
-        return category;
+        return board;
     }
 
     public void update(String name) {

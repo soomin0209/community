@@ -1,8 +1,8 @@
-package com.community.domain.category.controller;
+package com.community.domain.board.controller;
 
 import com.community.common.dto.BaseResponse;
-import com.community.domain.category.dto.response.GetAllCategoriesResponse;
-import com.community.domain.category.service.CategoryService;
+import com.community.domain.board.dto.response.GetAllBoardResponse;
+import com.community.domain.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +14,15 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/categories")
-public class CategoryController {
+@RequestMapping("/api/boards")
+public class BoardController {
 
-    private final CategoryService categoryService;
+    private final BoardService boardService;
 
-    // 카테고리 목록 조회
+    // 게시판 목록 조회
     @GetMapping
-    public ResponseEntity<BaseResponse<List<GetAllCategoriesResponse>>> getAll() {
+    public ResponseEntity<BaseResponse<List<GetAllBoardResponse>>> getAll() {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, categoryService.getAll()));
+                HttpStatus.OK.name(), null, boardService.getAll()));
     }
 }
