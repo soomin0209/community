@@ -37,4 +37,12 @@ public class CategoryAdminController {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, categoryAdminService.update(categoryId, request)));
     }
+
+    // 카테고리 삭제
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<BaseResponse<Void>> delete(@PathVariable Long categoryId) {
+        categoryAdminService.delete(categoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, null));
+    }
 }

@@ -53,4 +53,14 @@ public class CategoryAdminService {
                 category.getUpdatedAt()
         );
     }
+
+    // 카테고리 삭제
+    public void delete(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new ServiceErrorException(CategoryExceptionEnum.CATEGORY_NOT_FOUND));
+
+        // TODO 카테고리 하위에 게시물 있는지 검증
+
+        categoryRepository.delete(category);
+    }
 }
