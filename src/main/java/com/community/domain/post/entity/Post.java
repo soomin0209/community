@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Table(name = "posts", indexes = {
         @Index(name = "idx_post_deleted_at", columnList = "deletedAt"),
         @Index(name = "idx_post_board_id", columnList = "boardId"),
-        @Index(name = "ids_post_is_pinned", columnList = "isPinned")
+        @Index(name = "idx_post_is_pinned", columnList = "isPinned")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Post extends BaseEntity {
