@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record UpdatePostResponse(
         Long id,
+        Long boardId,
         String title,
         String content,
         String nickname,

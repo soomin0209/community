@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record CreatePostRequest(
+        Long boardId,
+
         @NotBlank(message = "제목을 입력해주세요")
         @Size(max = 50, message = "제목은 50자 이하여야 합니다")
         String title,

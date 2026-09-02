@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record GetAllPostsResponse(
         Long id,
+        Long boardId,
         String title,
         String nickname,
         PostType type,
