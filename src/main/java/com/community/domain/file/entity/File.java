@@ -8,7 +8,10 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "files")
+@Table(name = "files", indexes = {
+        @Index(name = "idx_file_deleted_at", columnList = "deletedAt"),
+        @Index(name = "idx_file_post_id", columnList = "postId")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class File extends BaseEntity {
     @Id
