@@ -134,15 +134,6 @@ public class FileService {
         }
     }
 
-    // 파일 첨부 해제
-    public void detachFiles(Long postId) {
-        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
-
-        for (File attachedFile : attachedFiles) {
-            attachedFile.detachFromPost();
-        }
-    }
-
     // 첨부된 파일 수정
     public void updateFiles(Long userId, Long postId, List<Long> newFileIds) {
         List<File> currentFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
@@ -232,5 +223,14 @@ public class FileService {
             throw new ServiceErrorException(FileExceptionEnum.INVALID_FILE_EXTENSION);
         }
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+    }
+
+    // 파일 첨부 해제
+    private void detachFiles(Long postId) {
+        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+
+        for (File attachedFile : attachedFiles) {
+            attachedFile.detachFromPost();
+        }
     }
 }
