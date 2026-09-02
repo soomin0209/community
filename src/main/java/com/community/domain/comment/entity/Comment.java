@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "comments")
+@Table(name = "comments", indexes = {
+        @Index(name = "idx_comment_deleted_at", columnList = "deletedAt"),
+        @Index(name = "idx_comment_post_id", columnList = "postId")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseEntity {
     @Id
