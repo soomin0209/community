@@ -10,6 +10,7 @@ import com.community.domain.file.repository.FileRepository;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.UUID;
 
 import static com.community.common.constant.AppConstants.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -83,9 +85,7 @@ public class FileService {
                 () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
 
         Path path = Paths.get(file.getStoredPath());
-        if (!Files.exists(path)) {
-            throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
-        }
+        validateFileExists(path);
 
         Resource resource = new FileSystemResource(path);
 
@@ -116,6 +116,9 @@ public class FileService {
             if (file.getPostId() != null) {
                 throw new ServiceErrorException(FileExceptionEnum.FILE_ALREADY_ATTACHED);
             }
+
+            Path path = Paths.get(file.getStoredPath());
+            validateFileExists(path);
         }
 
         for (File file : files) {
@@ -154,7 +157,16 @@ public class FileService {
             throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
         }
 
+        // DB Soft Delete
         file.delete();
+
+        // 실제 파일 즉시 삭제
+        try {
+            Path path = Paths.get(file.getStoredPath());
+            if (Files.exists(path)) Files.delete(path);
+        } catch (IOException e) {
+            log.warn("[FileService] 파일 삭제 실패 - fileId={}, path={}", fileId, file.getStoredPath());
+        }
     }
 
     // 파일 저장
@@ -220,6 +232,12 @@ public class FileService {
 
         for (File attachedFile : attachedFiles) {
             attachedFile.detachFromPost();
+        }
+    }
+
+    private void validateFileExists(Path path) {
+        if (!Files.exists(path)) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
         }
     }
 }
