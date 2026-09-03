@@ -127,20 +127,35 @@ public class FileService {
     }
 
     // 첨부된 파일 수정
-    public void updateFiles(Long userId, Long postId, List<Long> newFileIds) {
-        List<File> currentFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
-        List<Long> currentFileIds = currentFiles.stream()
+    public void updateFiles(Long userId, Long postId, List<Long> updatedFileIds) {
+        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<Long> attachedFileIds = attachedFiles.stream()
                 .map(File::getId)
                 .toList();
 
-        List<Long> requestFileIds = newFileIds != null ? newFileIds : List.of();
-        if (new HashSet<>(currentFileIds).equals(new HashSet<>(requestFileIds))) {
+        if (updatedFileIds == null) {
+            updatedFileIds = List.of();
+        }
+        if (new HashSet<>(attachedFileIds).equals(new HashSet<>(updatedFileIds))) {
             return;
         }
 
-        detachFiles(postId);
-        if (!requestFileIds.isEmpty()) {
-            attachFiles(userId, postId, requestFileIds);
+        // attached에는 있지만 updated에는 없는 파일 제거
+        for (File attachedFile : attachedFiles) {
+            if (!updatedFileIds.contains(attachedFile.getId())) {
+                delete(userId, attachedFile.getId());
+            }
+        }
+
+        // updated에는 있지만 attached에는 없는 파일 추가
+        List<Long> fileIdsToAttach = new ArrayList<>();
+        for (Long updatedFileId : updatedFileIds) {
+            if (!attachedFileIds.contains(updatedFileId)) {
+                fileIdsToAttach.add(updatedFileId);
+            }
+        }
+        if (!fileIdsToAttach.isEmpty()) {
+            attachFiles(userId, postId, fileIdsToAttach);
         }
     }
 
@@ -226,15 +241,7 @@ public class FileService {
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
     }
 
-    // 파일 첨부 해제
-    private void detachFiles(Long postId) {
-        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
-
-        for (File attachedFile : attachedFiles) {
-            attachedFile.detachFromPost();
-        }
-    }
-
+    // 실제 파일 존재 검증
     private void validateFileExists(Path path) {
         if (!Files.exists(path)) {
             throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
