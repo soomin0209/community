@@ -58,6 +58,10 @@ public class PostService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
+        if (!boardRepository.existsById(request.boardId())) {
+            throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
+        }
+
         if (request.type() == PostType.NOTICE && user.getType() != UserType.ADMIN) {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
         }
