@@ -32,6 +32,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.community.common.constant.AppConstants.COMMENT_MAX_DEPTH;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -41,8 +43,6 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final UserRankingService userRankingService;
-
-    private static final int MAX_DEPTH = 1;
 
     // 댓글 등록
     public CreateCommentResponse create(Long postId, Long userId, CreateCommentRequest request) {
@@ -61,7 +61,7 @@ public class CommentService {
                 throw new ServiceErrorException(CommentExceptionEnum.COMMENT_INVALID_PARENT);
             }
 
-            if (parentComment.getDepth() >= MAX_DEPTH) {
+            if (parentComment.getDepth() >= COMMENT_MAX_DEPTH) {
                 throw new ServiceErrorException(CommentExceptionEnum.COMMENT_DEPTH_LIMIT_EXCEED);
             }
 

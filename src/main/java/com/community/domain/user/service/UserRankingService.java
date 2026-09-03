@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.community.common.constant.AppConstants.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,11 +31,6 @@ public class UserRankingService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserRepository userRepository;
-
-    private static final String WEEKLY_KEY_PREFIX = "user:rank:week";
-    private static final String DEDUP_KEY_PREFIX = "user:rank:dedup:visit:";
-    private static final long WEEKLY_KEY_TTL = 8;   // 8일
-    private static final long DEDUP_KEY_TTL = 26;   // 26시간
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordComment(Long userId) {
@@ -48,7 +45,7 @@ public class UserRankingService {
             redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
 
             if (redisTemplate.getExpire(weeklyKey) == -1L) {
-                redisTemplate.expire(weeklyKey, Duration.ofDays(WEEKLY_KEY_TTL));
+                redisTemplate.expire(weeklyKey, Duration.ofDays(USER_RANK_WEEKLY_DAYS));
             }
         } catch (Exception e) {
             log.error("[UserRankingService] 주간 댓글 랭킹 집계 실패 - userId={}, msg={}", userId, e.getMessage());
@@ -68,7 +65,7 @@ public class UserRankingService {
             redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
 
             if (redisTemplate.getExpire(weeklyKey) == -1L) {
-                redisTemplate.expire(weeklyKey, Duration.ofDays(WEEKLY_KEY_TTL));
+                redisTemplate.expire(weeklyKey, Duration.ofDays(USER_RANK_WEEKLY_DAYS));
             }
         } catch (Exception e) {
             log.error("[UserRankingService] 주간 게시물 랭킹 집계 실패 - userId={}, msg={}", userId, e.getMessage());
@@ -82,9 +79,9 @@ public class UserRankingService {
             if (user == null) return;
 
             String dateKey = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
-            String dedupKey = DEDUP_KEY_PREFIX + userId + ":" + dateKey;
+            String dedupKey = USER_RANK_DEDUP_VISIT_PREFIX + userId + ":" + dateKey;
             Boolean isFirstVisit = redisTemplate.opsForValue()
-                    .setIfAbsent(dedupKey, "locked", Duration.ofHours(DEDUP_KEY_TTL));
+                    .setIfAbsent(dedupKey, "locked", Duration.ofHours(USER_RANK_DEDUP_VISIT_HOURS));
 
             if (Boolean.TRUE.equals(isFirstVisit)) {
                 user.increaseVisitCount();
@@ -94,7 +91,7 @@ public class UserRankingService {
                 redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
 
                 if (redisTemplate.getExpire(weeklyKey) == -1L) {
-                    redisTemplate.expire(weeklyKey, Duration.ofDays(WEEKLY_KEY_TTL));
+                    redisTemplate.expire(weeklyKey, Duration.ofDays(USER_RANK_WEEKLY_DAYS));
                 }
             }
         } catch (Exception e) {
@@ -138,6 +135,6 @@ public class UserRankingService {
         LocalDate now = LocalDate.now();
         int year = now.get(WeekFields.ISO.weekBasedYear());
         int weekNumber = now.get(WeekFields.ISO.weekOfWeekBasedYear());
-        return WEEKLY_KEY_PREFIX + ":" + type + ":" + year + ":" + weekNumber;
+        return USER_RANK_WEEKLY_PREFIX + ":" + type + ":" + year + ":" + weekNumber;
     }
 }

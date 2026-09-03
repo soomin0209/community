@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import static com.community.common.constant.AppConstants.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,26 +36,13 @@ public class FileService {
     private final FileRepository fileRepository;
     private final UserRepository userRepository;
 
-    private static final String UPLOAD_DIR = "uploads/";
-    private static final List<String> ALLOWED_EXTENSIONS = List.of(
-            "jpg", "jpeg", "png", "gif", "webp",
-            "pdf", "txt", "doc", "docx", "xls", "xlsx",
-            "json", "xml", "csv", "md", "zip"
-    );
-    private static final List<String> BLOCKED_EXTENSIONS = List.of(
-            "exe", "bat", "sh", "jar", "war", "dll",
-            "jsp", "php", "asp", "aspx"
-    );
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
-    private static final int MAX_FILES_COUNT = 10;
-
     // 파일 업로드
     public List<UploadFileResponse> upload(Long userId, List<MultipartFile> files) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
         }
 
-        if (files.size() > MAX_FILES_COUNT) {
+        if (files.size() > FILE_MAX_COUNT) {
             throw new ServiceErrorException(FileExceptionEnum.FILE_COUNT_EXCEEDED);
         }
 
@@ -134,15 +123,6 @@ public class FileService {
         }
     }
 
-    // 파일 첨부 해제
-    public void detachFiles(Long postId) {
-        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
-
-        for (File attachedFile : attachedFiles) {
-            attachedFile.detachFromPost();
-        }
-    }
-
     // 첨부된 파일 수정
     public void updateFiles(Long userId, Long postId, List<Long> newFileIds) {
         List<File> currentFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
@@ -183,7 +163,7 @@ public class FileService {
 
         try {
             String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            Path uploadPath = Paths.get(FILE_UPLOAD_DIR);
             Path filePath = uploadPath.resolve(storedFileName);
 
             Files.createDirectories(uploadPath);
@@ -192,7 +172,7 @@ public class FileService {
             File fileEntity = File.register(
                     userId,
                     file.getOriginalFilename(),
-                    UPLOAD_DIR + storedFileName,
+                    FILE_UPLOAD_DIR + storedFileName,
                     file.getSize(),
                     file.getContentType()
             );
@@ -213,15 +193,15 @@ public class FileService {
 
     // 파일 검증
     private void validateFile(MultipartFile file) {
-        if (file.getSize() > MAX_FILE_SIZE) {
+        if (file.getSize() > FILE_MAX_SIZE) {
             throw new ServiceErrorException(FileExceptionEnum.FILE_SIZE_EXCEEDED);
         }
 
         String extension = getExtension(file.getOriginalFilename());
-        if (BLOCKED_EXTENSIONS.contains(extension)) {
+        if (FILE_BLOCKED_EXTENSIONS.contains(extension)) {
             throw new ServiceErrorException(FileExceptionEnum.BLOCKED_FILE_EXTENSION);
         }
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+        if (!FILE_ALLOWED_EXTENSIONS.contains(extension)) {
             throw new ServiceErrorException(FileExceptionEnum.INVALID_FILE_EXTENSION);
         }
     }
@@ -232,5 +212,14 @@ public class FileService {
             throw new ServiceErrorException(FileExceptionEnum.INVALID_FILE_EXTENSION);
         }
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+    }
+
+    // 파일 첨부 해제
+    private void detachFiles(Long postId) {
+        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+
+        for (File attachedFile : attachedFiles) {
+            attachedFile.detachFromPost();
+        }
     }
 }

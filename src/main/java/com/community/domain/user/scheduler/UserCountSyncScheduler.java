@@ -23,7 +23,7 @@ public class UserCountSyncScheduler {
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void syncUserCount() {
-        log.info("[UserCountSyncScheduler] 정합성 보정 시작");
+        log.info("[UserCountSyncScheduler] 사용자 카운트 동기화 시작");
         int postSyncCount = 0;
         int commentSyncCount = 0;
 
@@ -36,20 +36,20 @@ public class UserCountSyncScheduler {
             if (user == null) continue;
 
             if (!user.getPostCount().equals(projection.postCount())) {
-                log.warn("[UserCountSyncScheduler] 총 게시물 수 불일치 - userId={}, 현재={}, 실제={}",
+                log.info("[UserCountSyncScheduler] 게시물 수 갱신 - userId={}, 기존={}, 실제={}",
                         user.getId(), user.getPostCount(), projection.postCount());
                 user.setPostCount(projection.postCount());
                 postSyncCount++;
             }
 
             if (!user.getCommentCount().equals(projection.commentCount())) {
-                log.warn("[UserCountSyncScheduler] 총 댓글 수 불일치 - userId={}, 현재={}, 실제={}",
+                log.info("[UserCountSyncScheduler] 댓글 수 갱신 - userId={}, 기존={}, 실제={}",
                         user.getId(), user.getCommentCount(), projection.commentCount());
                 user.setCommentCount(projection.commentCount());
                 commentSyncCount++;
             }
         }
 
-        log.info("[UserCountSyncScheduler] 정합성 보정 완료 - 게시물 {}건, 댓글 {}건", postSyncCount, commentSyncCount);
+        log.info("[UserCountSyncScheduler] 사용자 카운트 동기화 완료 - 게시물 {}건, 댓글 {}건", postSyncCount, commentSyncCount);
     }
 }

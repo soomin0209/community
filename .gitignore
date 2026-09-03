@@ -39,3 +39,4 @@ out/
 .env
 CLAUDE.md
 uploads
+*test*.sql

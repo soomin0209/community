@@ -14,13 +14,11 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import static com.community.common.constant.AppConstants.*;
+
 @Slf4j
 @Component
 public class JwtProvider {
-
-    private static final String BEARER_PREFIX = "Bearer ";
-    private static final String TOKEN_TYPE_ACCESS = "ACCESS";
-    private static final String TOKEN_TYPE_REFRESH = "REFRESH";
 
     @Value("${jwt.secret.key}")
     private String secretKey;
