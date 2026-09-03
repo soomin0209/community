@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static com.community.common.constant.AppConstants.*;
+
 @Getter
 @Entity
 @Table(name = "users", indexes = {
@@ -15,14 +17,6 @@ import lombok.NoArgsConstructor;
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
-
-    private static final int GOLD_MIN_VISIT_COUNT = 30;
-    private static final int GOLD_MIN_POST_COUNT = 10;
-    private static final int GOLD_MIN_COMMENT_COUNT = 30;
-    private static final int SILVER_MIN_VISIT_COUNT = 10;
-    private static final int SILVER_MIN_POST_COUNT = 3;
-    private static final int SILVER_MIN_COMMENT_COUNT = 10;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.community.common.constant.AppConstants.POST_MAX_PINNED_COUNT;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -19,8 +21,6 @@ public class PostAdminService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-
-    private static final int MAX_PINNED_COUNT = 10;
 
     public PinPostResponse pin(Long userId, Long postId) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
@@ -37,7 +37,7 @@ public class PostAdminService {
             post.unpin();
         } else {
             Long pinnedCount = postRepository.countByDeletedAtIsNullAndIsPinnedTrue();
-            if (pinnedCount >= MAX_PINNED_COUNT) {
+            if (pinnedCount >= POST_MAX_PINNED_COUNT) {
                 throw new ServiceErrorException(PostExceptionEnum.POST_PIN_LIMIT_EXCEEDED);
             }
             post.pin();

@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
+import static com.community.common.constant.AppConstants.BLACKLIST_PREFIX;
+import static com.community.common.constant.AppConstants.REFRESH_TOKEN_PREFIX;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,9 +35,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, Object> redisTemplate;
-
-    private static final String REFRESH_TOKEN_PREFIX = "refresh:";
-    private static final String BLACKLIST_PREFIX = "blacklist:";
 
     @Value("${jwt.refreshExpire}")
     private long refreshTokenExpireTime;

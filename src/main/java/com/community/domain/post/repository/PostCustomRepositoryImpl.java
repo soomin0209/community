@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.community.common.constant.AppConstants.POST_MAX_PINNED_COUNT;
 import static com.community.domain.comment.entity.QComment.comment;
 import static com.community.domain.post.entity.QPost.post;
 import static com.community.domain.user.entity.QUser.user;
@@ -23,8 +24,6 @@ import static com.community.domain.user.entity.QUser.user;
 public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     private final JPAQueryFactory queryFactory;
-
-    private static final int MAX_PINNED_COUNT = 10;
 
     @Override
     public Page<GetAllPostsResponse> findPostsWithCondition(
@@ -127,7 +126,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                     )
                     .groupBy(post.id)
                     .orderBy(post.pinnedAt.desc())
-                    .limit(MAX_PINNED_COUNT)
+                    .limit(POST_MAX_PINNED_COUNT)
                     .fetch();
 
             result.addAll(pinned);

@@ -15,14 +15,14 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.community.common.constant.AppConstants.FILE_RETENTION_DAYS;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CleanupFilesScheduler {
 
     private final FileRepository fileRepository;
-
-    private static final int FILE_RETENTION_DAYS = 30;
 
     @Scheduled(cron = "0 0 4 * * *")
     @Transactional

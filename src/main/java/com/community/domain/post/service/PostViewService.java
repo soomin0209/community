@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.*;
 
+import static com.community.common.constant.AppConstants.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,20 +28,15 @@ public class PostViewService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final PostRepository postRepository;
 
-    private static final String WEEKLY_KEY_PREFIX = "post:view:week:";
-    private static final String DEDUP_KEY_PREFIX = "post:view:dedup:";
-    private static final long WEEKLY_KEY_TTL = 8;   // 8일
-    private static final long DEDUP_KEY_TTL = 1;    // 1일
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(Long postId, String clientIp) {
         try {
             Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElse(null);
             if (post == null) return;
 
-            String dedupKey = DEDUP_KEY_PREFIX + postId + ":" + clientIp;
+            String dedupKey = POST_VIEW_DEDUP_PREFIX + postId + ":" + clientIp;
             Boolean isFirstView = redisTemplate.opsForValue()
-                    .setIfAbsent(dedupKey, "locked", Duration.ofDays(DEDUP_KEY_TTL));
+                    .setIfAbsent(dedupKey, "locked", Duration.ofDays(POST_VIEW_DEDUP_DAYS));
 
             if (Boolean.TRUE.equals(isFirstView)) {
                 post.incrementViewCount();
@@ -49,7 +46,7 @@ public class PostViewService {
                 redisTemplate.opsForZSet().incrementScore(weeklyKey, postId.toString(), 1);
 
                 if (redisTemplate.getExpire(weeklyKey) == -1L) {
-                    redisTemplate.expire(weeklyKey, Duration.ofDays(WEEKLY_KEY_TTL));
+                    redisTemplate.expire(weeklyKey, Duration.ofDays(POST_VIEW_WEEKLY_DAYS));
                 }
             }
         } catch (Exception e) {
@@ -94,6 +91,6 @@ public class PostViewService {
         LocalDate now = LocalDate.now();
         int year = now.get(WeekFields.ISO.weekBasedYear());
         int weekNumber = now.get(WeekFields.ISO.weekOfWeekBasedYear());
-        return WEEKLY_KEY_PREFIX + year + ":" + weekNumber;
+        return POST_VIEW_WEEKLY_PREFIX + year + ":" + weekNumber;
     }
 }
