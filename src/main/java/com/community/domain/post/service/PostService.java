@@ -218,7 +218,7 @@ public class PostService {
         // 첨부된 파일도 삭제 처리
         List<File> fileList = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
         for (File file : fileList) {
-            file.delete();
+            fileService.delete(userId, file.getId());
         }
     }
 }
