@@ -43,9 +43,12 @@ public class PostController {
     // 게시물 단건 조회
     @GetMapping("/{postId}")
     public ResponseEntity<BaseResponse<GetOnePostResponse>> getOne(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
             HttpServletRequest request
     ) {
+        Long userId = userDetails != null ? userDetails.getUserId() : null;
+
         String clientIp = request.getHeader("X-Forwarded-For");
         if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
             clientIp = request.getHeader("Proxy-Client-IP");
@@ -68,7 +71,7 @@ public class PostController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, postService.getOne(postId, clientIp)));
+                HttpStatus.OK.name(), null, postService.getOne(postId, clientIp, userId)));
     }
 
     // 게시물 목록 조회

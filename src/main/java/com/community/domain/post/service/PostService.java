@@ -93,11 +93,13 @@ public class PostService {
 
     // 게시물 단건 조회
     @Transactional(readOnly = true)
-    public GetOnePostResponse getOne(Long postId, String clientId) {
+    public GetOnePostResponse getOne(Long postId, String clientId, Long userId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        User user = userRepository.findById(post.getUserId()).orElseThrow(
+        boardService.validateBoardAccess(userId, post.getBoardId());
+
+        User writer = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
         postViewService.record(postId, clientId);
@@ -113,7 +115,7 @@ public class PostService {
                 post.getBoardId(),
                 post.getTitle(),
                 post.getContent(),
-                user.getNickname(),
+                writer.getNickname(),
                 post.getType(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
@@ -171,9 +173,9 @@ public class PostService {
             if (!boardRepository.existsById(request.boardId())) {
                 throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
             }
-        }
 
-        boardService.validateBoardAccess(user.getId(), request.boardId());
+            boardService.validateBoardAccess(user.getId(), request.boardId());
+        }
 
         post.update(request);
 
