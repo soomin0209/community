@@ -4,6 +4,7 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.board.exception.BoardExceptionEnum;
 import com.community.domain.board.repository.BoardRepository;
+import com.community.domain.board.service.BoardService;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
 import com.community.domain.file.dto.response.GetAllFilesResponse;
@@ -52,6 +53,7 @@ public class PostService {
     private final FileService fileService;
     private final FileRepository fileRepository;
     private final BoardRepository boardRepository;
+    private final BoardService boardService;
 
     // 게시물 등록
     public CreatePostResponse create(Long userId, CreatePostRequest request) {
@@ -61,6 +63,8 @@ public class PostService {
         if (!boardRepository.existsById(request.boardId())) {
             throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
         }
+
+        boardService.validateBoardAccess(userId, request.boardId());
 
         if (request.type() == PostType.NOTICE && user.getType() != UserType.ADMIN) {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
@@ -168,6 +172,8 @@ public class PostService {
                 throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
             }
         }
+
+        boardService.validateBoardAccess(user.getId(), request.boardId());
 
         post.update(request);
 
