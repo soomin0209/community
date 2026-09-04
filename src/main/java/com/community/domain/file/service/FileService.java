@@ -22,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -189,8 +191,15 @@ public class FileService {
         validateFile(file);
 
         try {
-            String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get(FILE_UPLOAD_DIR);
+            LocalDateTime now = LocalDateTime.now();
+            String year = now.format(DateTimeFormatter.ofPattern("yyyy"));
+            String month = now.format(DateTimeFormatter.ofPattern("MM"));
+            String day = now.format(DateTimeFormatter.ofPattern("dd"));
+            String time = now.format(DateTimeFormatter.ofPattern("HH-mm-ss-SSS"));
+
+            String folderPath = FILE_UPLOAD_DIR + year + "/" + month + "/" + day + "/";
+            String storedFileName = time + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get(folderPath);
             Path filePath = uploadPath.resolve(storedFileName);
 
             Files.createDirectories(uploadPath);
@@ -199,7 +208,7 @@ public class FileService {
             File fileEntity = File.register(
                     userId,
                     file.getOriginalFilename(),
-                    FILE_UPLOAD_DIR + storedFileName,
+                    folderPath + storedFileName,
                     file.getSize(),
                     file.getContentType()
             );
