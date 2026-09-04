@@ -27,7 +27,7 @@ public class BoardAdminService {
             throw new ServiceErrorException(BoardExceptionEnum.DUPLICATED_NAME);
         }
 
-        Board board = Board.register(request.name());
+        Board board = Board.register(request.name(), request.minGrade());
         boardRepository.save(board);
 
         return new CreateBoardResponse(board.getId(), board.getName(), board.getCreatedAt());

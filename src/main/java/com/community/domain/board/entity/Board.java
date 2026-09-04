@@ -1,5 +1,6 @@
 package com.community.domain.board.entity;
 
+import com.community.domain.user.enums.UserGrade;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class Board {
     @Column(nullable = false, length = 20, unique = true)
     private String name;
 
+    @Enumerated(value = EnumType.STRING)
+    private UserGrade minGrade;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -30,10 +34,11 @@ public class Board {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public static Board register(String name) {
+    public static Board register(String name, UserGrade minGrade) {
         Board board = new Board();
 
         board.name = name;
+        board.minGrade = minGrade;
 
         return board;
     }
