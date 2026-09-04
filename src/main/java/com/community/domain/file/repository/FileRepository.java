@@ -14,7 +14,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     List<File> findByPostIdIsNullAndCreatedAtBefore(LocalDateTime threshold);
 
-    List<File> findByDeletedAtBefore(LocalDateTime threshold);
-
     List<File> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
+
+    List<File> findAllByDeletedAtIsNotNull();
 }

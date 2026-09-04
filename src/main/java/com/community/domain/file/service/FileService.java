@@ -10,6 +10,7 @@ import com.community.domain.file.repository.FileRepository;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +31,7 @@ import java.util.UUID;
 
 import static com.community.common.constant.AppConstants.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -83,9 +87,7 @@ public class FileService {
                 () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
 
         Path path = Paths.get(file.getStoredPath());
-        if (!Files.exists(path)) {
-            throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
-        }
+        validateFileExists(path);
 
         Resource resource = new FileSystemResource(path);
 
@@ -116,6 +118,9 @@ public class FileService {
             if (file.getPostId() != null) {
                 throw new ServiceErrorException(FileExceptionEnum.FILE_ALREADY_ATTACHED);
             }
+
+            Path path = Paths.get(file.getStoredPath());
+            validateFileExists(path);
         }
 
         for (File file : files) {
@@ -124,20 +129,35 @@ public class FileService {
     }
 
     // 첨부된 파일 수정
-    public void updateFiles(Long userId, Long postId, List<Long> newFileIds) {
-        List<File> currentFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
-        List<Long> currentFileIds = currentFiles.stream()
+    public void updateFiles(Long userId, Long postId, List<Long> updatedFileIds) {
+        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<Long> attachedFileIds = attachedFiles.stream()
                 .map(File::getId)
                 .toList();
 
-        List<Long> requestFileIds = newFileIds != null ? newFileIds : List.of();
-        if (new HashSet<>(currentFileIds).equals(new HashSet<>(requestFileIds))) {
+        if (updatedFileIds == null) {
+            updatedFileIds = List.of();
+        }
+        if (new HashSet<>(attachedFileIds).equals(new HashSet<>(updatedFileIds))) {
             return;
         }
 
-        detachFiles(postId);
-        if (!requestFileIds.isEmpty()) {
-            attachFiles(userId, postId, requestFileIds);
+        // attached에는 있지만 updated에는 없는 파일 제거
+        for (File attachedFile : attachedFiles) {
+            if (!updatedFileIds.contains(attachedFile.getId())) {
+                delete(userId, attachedFile.getId());
+            }
+        }
+
+        // updated에는 있지만 attached에는 없는 파일 추가
+        List<Long> fileIdsToAttach = new ArrayList<>();
+        for (Long updatedFileId : updatedFileIds) {
+            if (!attachedFileIds.contains(updatedFileId)) {
+                fileIdsToAttach.add(updatedFileId);
+            }
+        }
+        if (!fileIdsToAttach.isEmpty()) {
+            attachFiles(userId, postId, fileIdsToAttach);
         }
     }
 
@@ -154,7 +174,16 @@ public class FileService {
             throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
         }
 
+        // DB Soft Delete
         file.delete();
+
+        // 실제 파일 즉시 삭제
+        try {
+            Path path = Paths.get(file.getStoredPath());
+            if (Files.exists(path)) Files.delete(path);
+        } catch (IOException e) {
+            log.warn("[FileService] 파일 삭제 실패 - fileId={}, path={}", fileId, file.getStoredPath());
+        }
     }
 
     // 파일 저장
@@ -162,8 +191,15 @@ public class FileService {
         validateFile(file);
 
         try {
-            String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get(FILE_UPLOAD_DIR);
+            LocalDateTime now = LocalDateTime.now();
+            String year = now.format(DateTimeFormatter.ofPattern("yyyy"));
+            String month = now.format(DateTimeFormatter.ofPattern("MM"));
+            String day = now.format(DateTimeFormatter.ofPattern("dd"));
+            String time = now.format(DateTimeFormatter.ofPattern("HH-mm-ss-SSS"));
+
+            String folderPath = FILE_UPLOAD_DIR + year + "/" + month + "/" + day + "/";
+            String storedFileName = time + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get(folderPath);
             Path filePath = uploadPath.resolve(storedFileName);
 
             Files.createDirectories(uploadPath);
@@ -172,7 +208,7 @@ public class FileService {
             File fileEntity = File.register(
                     userId,
                     file.getOriginalFilename(),
-                    FILE_UPLOAD_DIR + storedFileName,
+                    folderPath + storedFileName,
                     file.getSize(),
                     file.getContentType()
             );
@@ -214,12 +250,10 @@ public class FileService {
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
     }
 
-    // 파일 첨부 해제
-    private void detachFiles(Long postId) {
-        List<File> attachedFiles = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
-
-        for (File attachedFile : attachedFiles) {
-            attachedFile.detachFromPost();
+    // 실제 파일 존재 검증
+    private void validateFileExists(Path path) {
+        if (!Files.exists(path)) {
+            throw new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND);
         }
     }
 }

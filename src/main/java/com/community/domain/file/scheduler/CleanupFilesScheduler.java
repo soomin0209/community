@@ -31,38 +31,46 @@ public class CleanupFilesScheduler {
 
         LocalDateTime threshold = LocalDateTime.now().minusDays(FILE_RETENTION_DAYS);
         List<File> orphanList = fileRepository.findByPostIdIsNullAndCreatedAtBefore(threshold);
-        int count = deleteFiles(orphanList);
+
+        int count = 0;
+        for (File file : orphanList) {
+            if (deletePhysicalFile(file)) {
+                file.delete();
+                count++;
+            }
+        }
 
         log.info("[CleanupFilesScheduler] 고아 파일 정리 완료 - {}건", count);
     }
 
     @Scheduled(cron = "0 30 4 * * *")
-    @Transactional
+    @Transactional(readOnly = true)
     public void cleanupDeletedFiles() {
-        log.info("[CleanupFilesScheduler] 삭제 파일 정리 시작");
+        log.info("[CleanupFilesScheduler] 삭제 실패 파일 정리 시작");
 
-        LocalDateTime threshold = LocalDateTime.now().minusDays(FILE_RETENTION_DAYS);
-        List<File> deletedList = fileRepository.findByDeletedAtBefore(threshold);
-        int count = deleteFiles(deletedList);
+        List<File> deletedList = fileRepository.findAllByDeletedAtIsNotNull();
 
-        log.info("[CleanupFilesScheduler] 삭제 파일 정리 완료 - {}건", count);
-    }
-
-    private int deleteFiles(List<File> fileList) {
         int count = 0;
-
-        for (File file : fileList) {
-            try {
-                Path path = Paths.get(file.getStoredPath());
-                if (Files.exists(path)) Files.delete(path);
-
-                fileRepository.delete(file);
+        for (File file : deletedList) {
+            if (deletePhysicalFile(file)) {
                 count++;
-            } catch (IOException e) {
-                log.error("[CleanupFilesScheduler] 파일 정리 실패 - fileId={}, path={}", file.getId(), file.getStoredPath(), e);
             }
         }
 
-        return count;
+        log.info("[CleanupFilesScheduler] 삭제 실패 파일 정리 완료 - {}건", count);
+    }
+
+    private boolean deletePhysicalFile(File file) {
+        try {
+            Path path = Paths.get(file.getStoredPath());
+            if (Files.exists(path)) {
+                Files.delete(path);
+                return true;
+            }
+            return false;
+        } catch (IOException e) {
+            log.error("[CleanupFilesScheduler] 파일 정리 실패 - fileId={}, path={}", file.getId(), file.getStoredPath(), e);
+            return false;
+        }
     }
 }
