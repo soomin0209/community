@@ -4,6 +4,7 @@ import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.board.exception.BoardExceptionEnum;
 import com.community.domain.board.repository.BoardRepository;
+import com.community.domain.board.service.BoardService;
 import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
 import com.community.domain.file.dto.response.GetAllFilesResponse;
@@ -52,6 +53,7 @@ public class PostService {
     private final FileService fileService;
     private final FileRepository fileRepository;
     private final BoardRepository boardRepository;
+    private final BoardService boardService;
 
     // 게시물 등록
     public CreatePostResponse create(Long userId, CreatePostRequest request) {
@@ -61,6 +63,8 @@ public class PostService {
         if (!boardRepository.existsById(request.boardId())) {
             throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
         }
+
+        boardService.validateBoardAccess(userId, request.boardId());
 
         if (request.type() == PostType.NOTICE && user.getType() != UserType.ADMIN) {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
@@ -89,11 +93,13 @@ public class PostService {
 
     // 게시물 단건 조회
     @Transactional(readOnly = true)
-    public GetOnePostResponse getOne(Long postId, String clientId) {
+    public GetOnePostResponse getOne(Long postId, String clientId, Long userId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        User user = userRepository.findById(post.getUserId()).orElseThrow(
+        boardService.validateBoardAccess(userId, post.getBoardId());
+
+        User writer = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
         postViewService.record(postId, clientId);
@@ -109,7 +115,7 @@ public class PostService {
                 post.getBoardId(),
                 post.getTitle(),
                 post.getContent(),
-                user.getNickname(),
+                writer.getNickname(),
                 post.getType(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
@@ -167,6 +173,8 @@ public class PostService {
             if (!boardRepository.existsById(request.boardId())) {
                 throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
             }
+
+            boardService.validateBoardAccess(user.getId(), request.boardId());
         }
 
         post.update(request);
