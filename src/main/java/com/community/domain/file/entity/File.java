@@ -56,8 +56,4 @@ public class File extends BaseEntity {
     public void attachToPost(Long postId) {
         this.postId = postId;
     }
-
-    public void detachFromPost() {
-        this.postId = null;
-    }
 }
