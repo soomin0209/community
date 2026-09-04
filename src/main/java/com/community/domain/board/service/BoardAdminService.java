@@ -38,15 +38,13 @@ public class BoardAdminService {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 () -> new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND));
 
-        if (request.name().equals(board.getName())) {
-            throw new ServiceErrorException(BoardExceptionEnum.NAME_UNCHANGED);
+        if (request.name() != null && !request.name().equals(board.getName())) {
+            if (boardRepository.existsByName(request.name())) {
+                throw new ServiceErrorException(BoardExceptionEnum.DUPLICATED_NAME);
+            }
         }
 
-        if (boardRepository.existsByName(request.name())) {
-            throw new ServiceErrorException(BoardExceptionEnum.DUPLICATED_NAME);
-        }
-
-        board.update(request.name());
+        board.update(request);
 
         return new UpdateBoardResponse(
                 board.getId(),

@@ -1,5 +1,8 @@
 package com.community.domain.board.entity;
 
+import com.community.common.exception.ServiceErrorException;
+import com.community.domain.board.dto.request.UpdateBoardRequest;
+import com.community.domain.board.exception.BoardExceptionEnum;
 import com.community.domain.user.enums.UserGrade;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -43,7 +46,11 @@ public class Board {
         return board;
     }
 
-    public void update(String name) {
-        this.name = name;
+    public void update(UpdateBoardRequest request) {
+        if (request.name() == null && request.minGrade() == null) {
+            throw new ServiceErrorException(BoardExceptionEnum.BOARD_UPDATE_NO_CONTENT);
+        }
+        if (request.name() != null) this.name = request.name();
+        if (request.minGrade() != null) this.minGrade = request.minGrade();
     }
 }
