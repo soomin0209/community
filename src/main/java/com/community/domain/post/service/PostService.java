@@ -66,7 +66,7 @@ public class PostService {
 
         boardService.validateBoardAccess(userId, request.boardId());
 
-        if (request.type() == PostType.NOTICE && user.getType() != UserType.ADMIN) {
+        if (request.type() == PostType.NOTICE && user.getType() == UserType.USER) {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
         }
 
@@ -77,7 +77,8 @@ public class PostService {
 
         List<GetAllFilesResponse> files = fileService.getAll(post.getId());
 
-        userRankingService.recordPost(user.getId());
+        userRankingService.recordPost(user);
+        user.increasePostCount();
 
         return new CreatePostResponse(
                 post.getId(),

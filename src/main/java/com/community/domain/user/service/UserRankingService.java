@@ -33,42 +33,30 @@ public class UserRankingService {
     private final UserRepository userRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordComment(Long userId) {
+    public void recordComment(User user) {
         try {
-            User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElse(null);
-            if (user == null) return;
-
-            user.increaseCommentCount();
-            userRepository.save(user);
-
             String weeklyKey = getWeeklyKey(UserRankType.COMMENT.name().toLowerCase());
-            redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
+            redisTemplate.opsForZSet().incrementScore(weeklyKey, user.getId().toString(), 1);
 
             if (redisTemplate.getExpire(weeklyKey) == -1L) {
                 redisTemplate.expire(weeklyKey, Duration.ofDays(USER_RANK_WEEKLY_DAYS));
             }
         } catch (Exception e) {
-            log.error("[UserRankingService] 주간 댓글 랭킹 집계 실패 - userId={}, msg={}", userId, e.getMessage());
+            log.error("[UserRankingService] 주간 댓글 랭킹 집계 실패 - userId={}, msg={}", user.getId(), e.getMessage());
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordPost(Long userId) {
+    public void recordPost(User user) {
         try {
-            User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElse(null);
-            if (user == null) return;
-
-            user.increasePostCount();
-            userRepository.save(user);
-
             String weeklyKey = getWeeklyKey(UserRankType.POST.name().toLowerCase());
-            redisTemplate.opsForZSet().incrementScore(weeklyKey, userId.toString(), 1);
+            redisTemplate.opsForZSet().incrementScore(weeklyKey, user.getId().toString(), 1);
 
             if (redisTemplate.getExpire(weeklyKey) == -1L) {
                 redisTemplate.expire(weeklyKey, Duration.ofDays(USER_RANK_WEEKLY_DAYS));
             }
         } catch (Exception e) {
-            log.error("[UserRankingService] 주간 게시물 랭킹 집계 실패 - userId={}, msg={}", userId, e.getMessage());
+            log.error("[UserRankingService] 주간 게시물 랭킹 집계 실패 - userId={}, msg={}", user.getId(), e.getMessage());
         }
     }
 

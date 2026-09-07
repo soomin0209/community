@@ -17,7 +17,7 @@ import static com.community.common.constant.AppConstants.POST_MAX_PINNED_COUNT;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PostAdminService {
+public class PostManagerService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;

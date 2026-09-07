@@ -77,7 +77,8 @@ public class CommentService {
         );
         commentRepository.save(comment);
 
-        userRankingService.recordComment(user.getId());
+        userRankingService.recordComment(user);
+        user.increaseCommentCount();
 
         return new CreateCommentResponse(
                 comment.getId(),
