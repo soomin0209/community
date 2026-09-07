@@ -23,7 +23,14 @@ public abstract class BaseEntity {
 
     private LocalDateTime deletedAt;
 
+    private Long deletedBy;
+
     public void delete() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void deleteByManager(Long managerId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = managerId;
     }
 }

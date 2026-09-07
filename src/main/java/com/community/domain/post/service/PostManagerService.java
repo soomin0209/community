@@ -1,6 +1,11 @@
 package com.community.domain.post.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.comment.entity.Comment;
+import com.community.domain.comment.repository.CommentRepository;
+import com.community.domain.file.entity.File;
+import com.community.domain.file.repository.FileRepository;
+import com.community.domain.file.service.FileService;
 import com.community.domain.post.dto.response.PinPostResponse;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
@@ -12,6 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import static com.community.common.constant.AppConstants.POST_MAX_PINNED_COUNT;
 
 @Service
@@ -21,6 +30,9 @@ public class PostManagerService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final FileRepository fileRepository;
+    private final FileService fileService;
 
     public PinPostResponse pin(Long userId, Long postId) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
@@ -51,5 +63,41 @@ public class PostManagerService {
                 post.getCreatedAt(),
                 post.getIsPinned(),
                 post.getPinnedAt());
+    }
+
+    // 게시물 강제 삭제
+    public void delete(Long userId, Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
+                () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+        User writer = userRepository.findByIdAndDeletedAtIsNull(post.getUserId()).orElse(null);
+        if (writer != null) {
+            writer.decreasePostCount();
+        }
+
+        post.deleteByManager(userId);
+
+        // 댓글도 삭제 처리
+        List<Comment> commentList = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<Long> commentUserIds = commentList.stream()
+                .map(Comment::getUserId)
+                .distinct()
+                .toList();
+        Map<Long, User> commentUserMap = userRepository.findAllByIdInAndDeletedAtIsNull(commentUserIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+
+        for (Comment comment : commentList) {
+            User commentUser = commentUserMap.get(comment.getUserId());
+
+            comment.deleteByManager(userId);
+            if (commentUser != null) commentUser.decreaseCommentCount();
+        }
+
+        // 첨부된 파일도 삭제 처리
+        // TODO 매니저용 파일 강제 메서드 구현 시 교체 -> 현재 NPE 발생 가능
+        List<File> fileList = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
+        for (File file : fileList) {
+            fileService.delete(writer.getId(), file.getId());
+        }
     }
 }
