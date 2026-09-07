@@ -9,7 +9,8 @@ public enum UserExceptionEnum implements ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
     NICKNAME_UNCHANGED(HttpStatus.BAD_REQUEST, "기존 닉네임과 동일합니다"),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다"),
-    PASSWORD_UNCHANGED(HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 동일합니다");
+    PASSWORD_UNCHANGED(HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 동일합니다"),
+    UPDATE_ROLE_FORBIDDEN(HttpStatus.FORBIDDEN, "회원 등급 변경 권한이 없습니다");
 
     private final HttpStatus httpStatus;
     private final String message;

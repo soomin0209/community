@@ -66,6 +66,10 @@ public class User extends BaseEntity {
         this.password = password;
     }
 
+    public void updateRoleByManager(UserRole role) {
+        this.role = role;
+    }
+
     public void increaseVisitCount() {
         this.visitCount += 1;
         updateRole();
