@@ -21,8 +21,8 @@ public class UserManagerService {
     private final AuthService authService;
 
     // 회원 등급 변경
-    public UpdateUserRoleResponse updateRole(UpdateUserRoleRequest request) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(request.userId()).orElseThrow(
+    public UpdateUserRoleResponse updateRole(Long userId, UpdateUserRoleRequest request) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
         if (user.getRole().getLevel() >= UserRole.MANAGER.getLevel() ||

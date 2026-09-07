@@ -5,6 +5,7 @@ import com.community.common.dto.BaseResponse;
 import com.community.domain.user.dto.request.UpdateUserRoleRequest;
 import com.community.domain.user.dto.response.UpdateUserRoleResponse;
 import com.community.domain.user.service.UserManagerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,13 @@ public class UserManagerController {
     private final UserManagerService userManagerService;
 
     // 회원 등급 변경
-    @PatchMapping("/role")
+    @PatchMapping("{userId}/role")
     public ResponseEntity<BaseResponse<UpdateUserRoleResponse>> updateRole(
-            @RequestBody UpdateUserRoleRequest request
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateUserRoleRequest request
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, userManagerService.updateRole(request)));
+                HttpStatus.OK.name(), null, userManagerService.updateRole(userId, request)));
     }
 
     // 회원 강제 탈퇴
