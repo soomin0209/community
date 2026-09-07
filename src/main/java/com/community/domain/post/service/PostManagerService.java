@@ -5,7 +5,7 @@ import com.community.domain.comment.entity.Comment;
 import com.community.domain.comment.repository.CommentRepository;
 import com.community.domain.file.entity.File;
 import com.community.domain.file.repository.FileRepository;
-import com.community.domain.file.service.FileService;
+import com.community.domain.file.service.FileManagerService;
 import com.community.domain.post.dto.response.PinPostResponse;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
@@ -32,7 +32,7 @@ public class PostManagerService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final FileRepository fileRepository;
-    private final FileService fileService;
+    private final FileManagerService fileManagerService;
 
     public PinPostResponse pin(Long userId, Long postId) {
         if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
@@ -94,10 +94,9 @@ public class PostManagerService {
         }
 
         // 첨부된 파일도 삭제 처리
-        // TODO 매니저용 파일 강제 메서드 구현 시 교체 -> 현재 NPE 발생 가능
         List<File> fileList = fileRepository.findByPostIdAndDeletedAtIsNull(postId);
         for (File file : fileList) {
-            fileService.delete(writer.getId(), file.getId());
+            fileManagerService.delete(userId, file.getId());
         }
     }
 }
