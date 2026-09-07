@@ -1,6 +1,7 @@
 package com.community.domain.user.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.auth.service.AuthService;
 import com.community.domain.user.dto.request.UpdateUserRoleRequest;
 import com.community.domain.user.dto.response.UpdateUserRoleResponse;
 import com.community.domain.user.entity.User;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserManagerService {
 
     private final UserRepository userRepository;
+    private final AuthService authService;
 
     // 회원 등급 변경
     public UpdateUserRoleResponse updateRole(UpdateUserRoleRequest request) {
@@ -25,10 +27,11 @@ public class UserManagerService {
 
         if (user.getRole().getLevel() >= UserRole.MANAGER.getLevel() ||
                 request.role().getLevel() >= UserRole.MANAGER.getLevel()) {
-            throw new ServiceErrorException(UserExceptionEnum.UPDATE_ROLE_FORBIDDEN);
+            throw new ServiceErrorException(UserExceptionEnum.USER_MODIFICATION_FORBIDDEN);
         }
 
         user.updateRoleByManager(request.role());
+        authService.forceLogout(user.getId());
 
         return new UpdateUserRoleResponse(
                 user.getId(),
@@ -36,5 +39,18 @@ public class UserManagerService {
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
+    }
+
+    // 회원 강제 탈퇴
+    public void withdraw(Long managerId, Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        if (user.getRole().getLevel() >= UserRole.MANAGER.getLevel()) {
+            throw new ServiceErrorException(UserExceptionEnum.USER_MODIFICATION_FORBIDDEN);
+        }
+
+        user.deleteByManager(managerId);
+        authService.forceLogout(user.getId());
     }
 }

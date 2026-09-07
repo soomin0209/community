@@ -138,4 +138,13 @@ public class AuthService {
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
         }
     }
+
+    // 강제 로그아웃
+    public void forceLogout(Long userId) {
+        try {
+            redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+        } catch (Exception e) {
+            log.warn("[AuthService] Redis 강제 Logout 처리 실패 - userId={}, msg={}", userId, e.getMessage());
+        }
+    }
 }
