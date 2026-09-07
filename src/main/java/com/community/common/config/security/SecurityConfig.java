@@ -37,7 +37,9 @@ public class SecurityConfig {
     public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.withDefaultRolePrefix()
                 .role("ADMIN").implies("MANAGER")
-                .role("MANAGER").implies("USER")
+                .role("MANAGER").implies("GOLD")
+                .role("GOLD").implies("SILVER")
+                .role("SILVER").implies("BRONZE")
                 .build();
     }
 

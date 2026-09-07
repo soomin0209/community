@@ -25,7 +25,7 @@ import com.community.domain.post.repository.PostRepository;
 import com.community.domain.reaction.enums.ReactionType;
 import com.community.domain.reaction.repository.ReactionRepository;
 import com.community.domain.user.entity.User;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import com.community.domain.user.service.UserRankingService;
@@ -66,7 +66,7 @@ public class PostService {
 
         boardService.validateBoardAccess(userId, request.boardId());
 
-        if (request.type() == PostType.NOTICE && user.getType() == UserType.USER) {
+        if (request.type() == PostType.NOTICE && user.getRole().getLevel() < UserRole.MANAGER.getLevel()) {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
         }
 

@@ -9,7 +9,6 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +38,7 @@ public class BoardService {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 () -> new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND));
 
-        if (board.getMinGrade() == null) {
+        if (board.getMinRole() == null) {
             return;
         }
 
@@ -50,7 +49,7 @@ public class BoardService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        if (user.getGrade().getLevel() < board.getMinGrade().getLevel()) {
+        if (user.getRole().getLevel() < board.getMinRole().getLevel()) {
             throw new ServiceErrorException(BoardExceptionEnum.BOARD_ACCESS_DENIED);
         }
     }

@@ -1,8 +1,7 @@
 package com.community.domain.user.entity;
 
 import com.community.common.entity.BaseEntity;
-import com.community.domain.user.enums.UserGrade;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,7 +31,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserType type;
+    private UserRole role = UserRole.BRONZE;
 
     @Column(nullable = false)
     private Long visitCount = 0L;
@@ -42,23 +41,19 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private Long commentCount = 0L;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserGrade grade = UserGrade.BRONZE;
 
     public static User register(
             String loginId,
             String nickname,
             String password,
-            UserType type
+            UserRole role
     ) {
         User user = new User();
 
         user.loginId = loginId;
         user.nickname = nickname;
         user.password = password;
-        user.type = type;
+        user.role = role;
 
         return user;
     }
@@ -73,54 +68,57 @@ public class User extends BaseEntity {
 
     public void increaseVisitCount() {
         this.visitCount += 1;
-        updateGrade();
+        updateRole();
     }
 
     public void increasePostCount() {
         this.postCount += 1;
-        updateGrade();
+        updateRole();
     }
 
     public void decreasePostCount() {
         if (this.postCount > 0) {
             this.postCount -= 1;
-            updateGrade();
+            updateRole();
         }
     }
 
     public void increaseCommentCount() {
         this.commentCount += 1;
-        updateGrade();
+        updateRole();
     }
 
     public void decreaseCommentCount() {
         if (this.commentCount > 0) {
             this.commentCount -= 1;
-            updateGrade();
+            updateRole();
         }
     }
 
     public void setPostCount(Long postCount) {
         this.postCount = postCount;
-        updateGrade();
+        updateRole();
     }
 
     public void setCommentCount(Long commentCount) {
         this.commentCount = commentCount;
-        updateGrade();
+        updateRole();
     }
 
-    public void updateGrade() {
+    public void updateRole() {
+        if (this.role == UserRole.MANAGER || this.role == UserRole.ADMIN) {
+            return;
+        }
         if (this.visitCount >= GOLD_MIN_VISIT_COUNT &&
                 this.postCount >= GOLD_MIN_POST_COUNT &&
                 this.commentCount >= GOLD_MIN_COMMENT_COUNT) {
-            this.grade = UserGrade.GOLD;
+            this.role = UserRole.GOLD;
         } else if (this.visitCount >= SILVER_MIN_VISIT_COUNT &&
                 this.postCount >= SILVER_MIN_POST_COUNT &&
                 this.commentCount >= SILVER_MIN_COMMENT_COUNT) {
-            this.grade = UserGrade.SILVER;
+            this.role = UserRole.SILVER;
         } else {
-            this.grade = UserGrade.BRONZE;
+            this.role = UserRole.BRONZE;
         }
     }
 }

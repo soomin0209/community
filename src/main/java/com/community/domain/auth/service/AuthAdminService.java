@@ -5,7 +5,7 @@ import com.community.domain.auth.dto.request.AdminSignupRequest;
 import com.community.domain.auth.dto.response.SignupResponse;
 import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.user.entity.User;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +40,7 @@ public class AuthAdminService {
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserType.ADMIN);
+        User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserRole.ADMIN);
         userRepository.save(user);
 
         return new SignupResponse(user.getId(), user.getLoginId(), user.getNickname());

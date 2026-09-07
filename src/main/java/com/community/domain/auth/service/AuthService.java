@@ -9,7 +9,7 @@ import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.dto.request.UserSignupRequest;
 import com.community.domain.auth.dto.response.SignupResponse;
 import com.community.domain.user.entity.User;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserType.USER);
+        User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserRole.BRONZE);
         userRepository.save(user);
 
         return new SignupResponse(user.getId(), user.getLoginId(), user.getNickname());
@@ -66,7 +66,7 @@ public class AuthService {
             throw new ServiceErrorException(AuthExceptionEnum.INVALID_CREDENTIALS);
         }
 
-        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getType().name());
+        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getRole().name());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
         try {
@@ -106,7 +106,7 @@ public class AuthService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        String newAccessToken = jwtProvider.createAccessToken(user.getId(), user.getType().name());
+        String newAccessToken = jwtProvider.createAccessToken(user.getId(), user.getRole().name());
         String newRefreshToken = jwtProvider.createRefreshToken(user.getId());
 
         try {
