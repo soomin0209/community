@@ -36,7 +36,8 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getVisitCount(),
                 user.getPostCount(),
-                user.getCommentCount()
+                user.getCommentCount(),
+                user.getRole()
         );
     }
 
@@ -53,7 +54,8 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getVisitCount(),
                 user.getPostCount(),
-                user.getCommentCount()
+                user.getCommentCount(),
+                user.getRole()
         );
     }
 
