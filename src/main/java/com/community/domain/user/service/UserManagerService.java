@@ -53,7 +53,6 @@ public class UserManagerService {
         }
 
         user.suspendByManager(managerId, request.suspendedReason(), request.suspensionDay());
-        authService.forceLogout(user.getId());
 
         return new SuspendUserResponse(
                 user.getId(),
@@ -62,6 +61,18 @@ public class UserManagerService {
                 user.getSuspensionDay(),
                 user.getSuspendedAt().plusDays(user.getSuspensionDay())
         );
+    }
+
+    // 회원 활동 정지 해제
+    public void unsuspend(Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
+
+        if (user.getRole().getLevel() >= UserRole.MANAGER.getLevel()) {
+            throw new ServiceErrorException(UserExceptionEnum.USER_MODIFICATION_FORBIDDEN);
+        }
+
+        user.unsuspend();
     }
 
     // 회원 강제 탈퇴

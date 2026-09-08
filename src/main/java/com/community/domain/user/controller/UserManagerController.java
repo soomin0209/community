@@ -43,6 +43,16 @@ public class UserManagerController {
                 HttpStatus.OK.name(), null, userManagerService.suspend(managerId, userId, request)));
     }
 
+    // 회원 활동 정지 해제
+    @PatchMapping("/{userId}/unsuspend")
+    public ResponseEntity<BaseResponse<Void>> unsuspend(
+            @PathVariable Long userId
+    ) {
+        userManagerService.unsuspend(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
+                HttpStatus.OK.name(), null, null));
+    }
+
     // 회원 강제 탈퇴
     @DeleteMapping("/{userId}")
     public ResponseEntity<BaseResponse<Void>> withdraw(
