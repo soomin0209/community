@@ -149,4 +149,11 @@ public class User extends BaseEntity {
         LocalDateTime suspendedUntil = this.getSuspendedAt().plusDays(this.getSuspensionDay());
         return LocalDateTime.now().isBefore(suspendedUntil);
     }
+
+    public void unsuspend() {
+        this.suspendedAt = null;
+        this.suspendedBy = null;
+        this.suspendedReason = null;
+        this.suspensionDay = 0;
+    }
 }
