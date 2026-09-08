@@ -52,6 +52,10 @@ public class UserManagerService {
             throw new ServiceErrorException(UserExceptionEnum.USER_MODIFICATION_FORBIDDEN);
         }
 
+        if (user.isSuspended()) {
+            throw new ServiceErrorException(UserExceptionEnum.USER_ALREADY_SUSPENDED);
+        }
+
         user.suspendByManager(managerId, request.suspendedReason(), request.suspensionDay());
 
         return new SuspendUserResponse(
@@ -70,6 +74,10 @@ public class UserManagerService {
 
         if (user.getRole().getLevel() >= UserRole.MANAGER.getLevel()) {
             throw new ServiceErrorException(UserExceptionEnum.USER_MODIFICATION_FORBIDDEN);
+        }
+
+        if (!user.isSuspended()) {
+            throw new ServiceErrorException(UserExceptionEnum.USER_NOT_SUSPENDED);
         }
 
         user.unsuspend();
