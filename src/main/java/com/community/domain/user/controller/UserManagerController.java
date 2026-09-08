@@ -24,11 +24,13 @@ public class UserManagerController {
     // 회원 등급 변경
     @PatchMapping("/{userId}/role")
     public ResponseEntity<BaseResponse<UpdateUserRoleResponse>> updateRole(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserRoleRequest request
     ) {
+        Long managerId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, userManagerService.updateRole(userId, request)));
+                HttpStatus.OK.name(), null, userManagerService.updateRole(managerId, userId, request)));
     }
 
     // 회원 활동 정지
@@ -46,9 +48,11 @@ public class UserManagerController {
     // 회원 활동 정지 해제
     @PatchMapping("/{userId}/unsuspend")
     public ResponseEntity<BaseResponse<Void>> unsuspend(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long userId
     ) {
-        userManagerService.unsuspend(userId);
+        Long managerId = userDetails.getUserId();
+        userManagerService.unsuspend(managerId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
                 HttpStatus.OK.name(), null, null));
     }
