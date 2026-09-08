@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 import static com.community.common.constant.AppConstants.*;
 
@@ -15,6 +18,7 @@ import static com.community.common.constant.AppConstants.*;
         @Index(name = "idx_user_deleted_at", columnList = "deletedAt")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +45,11 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private Long commentCount = 0L;
+
+    private LocalDateTime suspendedAt;
+    private Long suspendedBy;
+    private String suspendedReason;
+    private int suspensionDay;
 
     public static User register(
             String loginId,
@@ -124,5 +133,12 @@ public class User extends BaseEntity {
         } else {
             this.role = UserRole.BRONZE;
         }
+    }
+
+    public void suspendByManager(Long managerId, String suspendedReason, int suspensionDay) {
+        this.suspendedAt = LocalDateTime.now();
+        this.suspendedBy = managerId;
+        this.suspendedReason = suspendedReason;
+        this.suspensionDay = suspensionDay;
     }
 }

@@ -10,7 +10,7 @@ public enum UserExceptionEnum implements ErrorCode {
     NICKNAME_UNCHANGED(HttpStatus.BAD_REQUEST, "기존 닉네임과 동일합니다"),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다"),
     PASSWORD_UNCHANGED(HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 동일합니다"),
-    USER_MODIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 사용자를 수정할 권한이 없습니다");
+    USER_MODIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 사용자를 변경할 권한이 없습니다");
 
     private final HttpStatus httpStatus;
     private final String message;
