@@ -28,6 +28,7 @@ public class Board {
     private String name;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(20)")
     private UserRole minRole;
 
     @CreatedDate

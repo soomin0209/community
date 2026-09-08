@@ -34,7 +34,7 @@ public class User extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private UserRole role = UserRole.BRONZE;
 
     @Column(nullable = false)

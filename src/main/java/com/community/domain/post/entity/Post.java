@@ -38,7 +38,7 @@ public class Post extends BaseEntity {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private PostType type = PostType.GENERAL;
 
     @Column(nullable = false)
