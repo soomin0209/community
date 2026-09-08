@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final UserVisitInterceptor userVisitInterceptor;
+    private final SuspendedCheckInterceptor suspendedCheckInterceptor;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -29,6 +30,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/auth/login",
                         "/api/auth/signup",
                         "/api/auth/reissue",
+                        "/api/admin/auth/**"
+                );
+
+        registry.addInterceptor(suspendedCheckInterceptor)
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(
+                        "/api/auth/login",
+                        "/api/auth/signup",
+                        "/api/auth/reissue",
+                        "/api/auth/logout",
                         "/api/admin/auth/**"
                 );
     }

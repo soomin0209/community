@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long>, UserCustomRep
 
     Optional<User> findByIdAndDeletedAtIsNull(Long id);
 
-    boolean existsByIdAndDeletedAtIsNull(Long userId);
+    boolean existsByIdAndDeletedAtIsNull(Long id);
 
     List<User> findAllByDeletedAtIsNull();
 

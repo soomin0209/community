@@ -12,5 +12,8 @@ public record GetMypageResponse(
         Long visitCount,
         Long postCount,
         Long commentCount,
-        UserRole role
+        UserRole role,
+        LocalDateTime suspendedAt,
+        String suspendedReason,
+        LocalDateTime suspendedUntil
 ) {}

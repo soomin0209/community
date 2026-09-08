@@ -141,4 +141,12 @@ public class User extends BaseEntity {
         this.suspendedReason = suspendedReason;
         this.suspensionDay = suspensionDay;
     }
+
+    public boolean isSuspended() {
+        if (this.getSuspendedAt() == null) {
+            return false;
+        }
+        LocalDateTime suspendedUntil = this.getSuspendedAt().plusDays(this.getSuspensionDay());
+        return LocalDateTime.now().isBefore(suspendedUntil);
+    }
 }

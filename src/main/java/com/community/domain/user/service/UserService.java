@@ -55,7 +55,10 @@ public class UserService {
                 user.getVisitCount(),
                 user.getPostCount(),
                 user.getCommentCount(),
-                user.getRole()
+                user.getRole(),
+                user.getSuspendedAt(),
+                user.getSuspendedReason(),
+                user.getSuspendedAt() != null ? user.getSuspendedAt().plusDays(user.getSuspensionDay()) : null
         );
     }
 
