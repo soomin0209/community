@@ -1,16 +1,15 @@
-ALTER TABLE posts DROP FOREIGN KEY fk_post_user;
-ALTER TABLE posts DROP FOREIGN KEY fk_post_board;
-
-ALTER TABLE comments DROP FOREIGN KEY fk_comment_parent;
-ALTER TABLE comments DROP FOREIGN KEY fk_comment_post;
-ALTER TABLE comments DROP FOREIGN KEY fk_comment_user;
-
-ALTER TABLE files DROP FOREIGN KEY fk_file_user;
-ALTER TABLE files DROP FOREIGN KEY fk_file_post;
-
-ALTER TABLE reactions DROP FOREIGN KEY fk_reaction_post;
-ALTER TABLE reactions DROP FOREIGN KEY fk_reaction_user;
-
+-- ALTER TABLE posts DROP FOREIGN KEY fk_post_user;
+-- ALTER TABLE posts DROP FOREIGN KEY fk_post_board;
+--
+-- ALTER TABLE comments DROP FOREIGN KEY fk_comment_parent;
+-- ALTER TABLE comments DROP FOREIGN KEY fk_comment_post;
+-- ALTER TABLE comments DROP FOREIGN KEY fk_comment_user;
+--
+-- ALTER TABLE files DROP FOREIGN KEY fk_file_user;
+-- ALTER TABLE files DROP FOREIGN KEY fk_file_post;
+--
+-- ALTER TABLE reactions DROP FOREIGN KEY fk_reaction_post;
+-- ALTER TABLE reactions DROP FOREIGN KEY fk_reaction_user;
 
 -- Post 테이블
 ALTER TABLE posts
