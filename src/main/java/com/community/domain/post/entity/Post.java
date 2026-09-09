@@ -91,4 +91,8 @@ public class Post extends BaseEntity {
         this.isPinned = false;
         this.pinnedAt = null;
     }
+
+    public void move(Long boardId) {
+        this.boardId = boardId;
+    }
 }
