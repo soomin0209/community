@@ -3,6 +3,7 @@ package com.community.domain.comment.service;
 import com.community.common.dto.CursorResponse;
 import com.community.common.dto.PageResponse;
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.board.service.BoardService;
 import com.community.domain.comment.dto.request.CreateCommentRequest;
 import com.community.domain.comment.dto.request.CommentCursorCondition;
 import com.community.domain.comment.dto.request.CommentPageCondition;
@@ -43,11 +44,14 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final UserRankingService userRankingService;
+    private final BoardService boardService;
 
     // 댓글 등록
     public CreateCommentResponse create(Long postId, Long userId, CreateCommentRequest request) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+        boardService.validateBoardAccess(userId, post.getBoardId());
 
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
@@ -90,9 +94,11 @@ public class CommentService {
 
     // 댓글 목록 조회
     @Transactional(readOnly = true)
-    public CursorResponse<GetAllCommentsResponse> getAll(Long postId, CommentCursorCondition condition) {
+    public CursorResponse<GetAllCommentsResponse> getAll(Long postId, CommentCursorCondition condition, Long userId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+        boardService.validateBoardAccess(userId, post.getBoardId());
 
         List<GetAllCommentsResponse> parentList = commentRepository.findParentCommentsWithCursor(
                 condition.getCursor(),
@@ -155,6 +161,10 @@ public class CommentService {
         if (!comment.getUserId().equals(user.getId())) {
             throw new ServiceErrorException(CommentExceptionEnum.COMMENT_FORBIDDEN);
         }
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(
+                () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+        boardService.validateBoardAccess(user.getId(), post.getBoardId());
 
         comment.update(request);
 

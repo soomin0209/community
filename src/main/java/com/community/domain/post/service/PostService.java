@@ -170,6 +170,8 @@ public class PostService {
             throw new ServiceErrorException(PostExceptionEnum.POST_FORBIDDEN);
         }
 
+        boardService.validateBoardAccess(user.getId(), post.getBoardId());
+
         if (request.boardId() != null && !request.boardId().equals(post.getBoardId())) {
             if (!boardRepository.existsById(request.boardId())) {
                 throw new ServiceErrorException(BoardExceptionEnum.BOARD_NOT_FOUND);
