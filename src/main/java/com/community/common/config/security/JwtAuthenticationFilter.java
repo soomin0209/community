@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.community.common.constant.AppConstants.BLACKLIST_ALL_PREFIX;
 import static com.community.common.constant.AppConstants.BLACKLIST_PREFIX;
 
 @Slf4j
@@ -35,7 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (isValid) {
             try {
-                blacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+                Long userId = jwtProvider.getUserId(token);
+
+                boolean tokenBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+                boolean userBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_ALL_PREFIX + userId));
+
+                blacklisted = tokenBlacklisted || userBlacklisted;
             } catch (Exception e) {
                 log.error("[JwtAuthenticationFilter] Redis blacklist 확인 실패 - msg={}", e.getMessage());
                 throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);

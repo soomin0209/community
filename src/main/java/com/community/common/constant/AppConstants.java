@@ -13,6 +13,7 @@ public final class AppConstants {
     // 인증
     public static final String REFRESH_TOKEN_PREFIX = "refresh:";
     public static final String BLACKLIST_PREFIX = "blacklist:";
+    public static final String BLACKLIST_ALL_PREFIX = "blacklist:all:";
 
     // 게시글 조회수
     public static final String POST_VIEW_WEEKLY_PREFIX = "post:view:week:";

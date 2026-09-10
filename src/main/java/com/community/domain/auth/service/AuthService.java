@@ -22,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
-import static com.community.common.constant.AppConstants.BLACKLIST_PREFIX;
-import static com.community.common.constant.AppConstants.REFRESH_TOKEN_PREFIX;
+import static com.community.common.constant.AppConstants.*;
 
 @Slf4j
 @Service
@@ -35,6 +34,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @Value("${jwt.accessExpire}")
+    private long accessTokenExpireTime;
 
     @Value("${jwt.refreshExpire}")
     private long refreshTokenExpireTime;
@@ -139,12 +141,31 @@ public class AuthService {
         }
     }
 
-    // 강제 로그아웃
-    public void forceLogout(Long userId) {
+    // 권한 변경용 - refreshToken 유지
+    public void invalidateAccessToken(Long userId) {
+        try {
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_ALL_PREFIX + userId,
+                    "true",
+                    Duration.ofMillis(accessTokenExpireTime)
+            );
+        } catch (Exception e) {
+            log.warn("[AuthService] Redis Access Token 무효화 실패 - userId={}, msg={}", userId, e.getMessage());
+        }
+    }
+
+    // 강제 탈퇴용 - refreshToken 삭제
+    public void invalidateAllTokens(Long userId) {
         try {
             redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_ALL_PREFIX + userId,
+                    "true",
+                    Duration.ofMillis(accessTokenExpireTime)
+            );
         } catch (Exception e) {
-            log.warn("[AuthService] Redis 강제 Logout 처리 실패 - userId={}, msg={}", userId, e.getMessage());
+            log.warn("[AuthService] Redis 모든 토큰 무효화 실패 - userId={}, msg={}", userId, e.getMessage());
         }
     }
 }

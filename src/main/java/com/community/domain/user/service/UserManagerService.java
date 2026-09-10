@@ -32,7 +32,7 @@ public class UserManagerService {
         }
 
         user.updateRoleByManager(request.role());
-        authService.forceLogout(user.getId());
+        authService.invalidateAccessToken(user.getId());
 
         return new UpdateUserRoleResponse(
                 user.getId(),
@@ -82,7 +82,7 @@ public class UserManagerService {
         User user = managerAndUser.user();
 
         user.deleteByManager(manager.getId());
-        authService.forceLogout(user.getId());
+        authService.invalidateAllTokens(user.getId());
     }
 
     private record ManagerAndUser(User manager, User user) {}
