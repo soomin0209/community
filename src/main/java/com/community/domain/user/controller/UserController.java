@@ -2,7 +2,6 @@ package com.community.domain.user.controller;
 
 import com.community.common.config.security.CustomUserDetails;
 import com.community.common.dto.BaseResponse;
-import com.community.domain.auth.service.AuthService;
 import com.community.domain.user.dto.request.UpdateUserNicknameRequest;
 import com.community.domain.user.dto.request.UpdateUserPasswordRequest;
 import com.community.domain.user.dto.response.*;
@@ -27,7 +26,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final AuthService authService;
     private final UserRankingService userRankingService;
 
     // 프로필 조회
@@ -87,8 +85,7 @@ public class UserController {
     ) {
         Long userId = userDetails.getUserId();
         String accessToken = (String) request.getAttribute("accessToken");
-        userService.withdraw(userId);
-        authService.logout(userId, accessToken);
+        userService.withdraw(userId, accessToken);
 
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
