@@ -139,12 +139,9 @@ public class CommentService {
     // 내 댓글 목록 조회
     @Transactional(readOnly = true)
     public PageResponse<GetMyCommentsResponse> getMine(Long userId, CommentPageCondition condition) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
-                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
-
         Page<GetMyCommentsResponse> page = commentRepository.findMyCommentsWithCondition(
                 PageRequest.of(condition.getPage(), condition.getSize()),
-                user.getId()
+                userId
         );
 
         return PageResponse.from(page);
@@ -152,19 +149,16 @@ public class CommentService {
 
     // 댓글 수정
     public UpdateCommentResponse update(Long userId, Long commentId, UpdateCommentRequest request) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
-                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
-
         Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId).orElseThrow(
                 () -> new ServiceErrorException(CommentExceptionEnum.COMMENT_NOT_FOUND));
 
-        if (!comment.getUserId().equals(user.getId())) {
+        if (!comment.getUserId().equals(userId)) {
             throw new ServiceErrorException(CommentExceptionEnum.COMMENT_FORBIDDEN);
         }
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
-        boardService.validateBoardAccess(user.getId(), post.getBoardId());
+        boardService.validateBoardAccess(userId, post.getBoardId());
 
         comment.update(request);
 
