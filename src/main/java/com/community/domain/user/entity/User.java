@@ -110,12 +110,10 @@ public class User extends BaseEntity {
 
     public void setPostCount(Long postCount) {
         this.postCount = postCount;
-        updateRole();
     }
 
     public void setCommentCount(Long commentCount) {
         this.commentCount = commentCount;
-        updateRole();
     }
 
     public void updateRole() {
