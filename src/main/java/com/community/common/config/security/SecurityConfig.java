@@ -1,5 +1,6 @@
 package com.community.common.config.security;
 
+import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,7 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final UserRepository userRepository;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
@@ -71,7 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/boards/**").permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, redisTemplate),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, redisTemplate, userRepository),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
