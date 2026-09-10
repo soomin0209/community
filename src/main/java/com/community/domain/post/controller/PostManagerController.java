@@ -23,12 +23,10 @@ public class PostManagerController {
     // 게시물 고정/해제
     @PatchMapping("/{postId}/pin")
     public ResponseEntity<BaseResponse<PinPostResponse>> pin(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId
     ) {
-        Long userId = userDetails.getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, postManagerService.pin(userId, postId)));
+                HttpStatus.OK.name(), null, postManagerService.pin(postId)));
     }
 
     // 게시물 강제 이동

@@ -43,11 +43,7 @@ public class PostManagerService {
     private final BoardService boardService;
 
     // 게시물 고정/해제
-    public PinPostResponse pin(Long userId, Long postId) {
-        if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
-            throw new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND);
-        }
-
+    public PinPostResponse pin(Long postId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 

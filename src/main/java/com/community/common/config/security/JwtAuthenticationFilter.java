@@ -2,6 +2,7 @@ package com.community.common.config.security;
 
 import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -44,6 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("accessToken", token);
 
             Long userId = jwtProvider.getUserId(token);
+
+            if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String role = jwtProvider.getRole(token);
 
             CustomUserDetails userDetails = new CustomUserDetails(userId, role);
