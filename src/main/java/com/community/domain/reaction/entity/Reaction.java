@@ -25,7 +25,7 @@ public class Reaction {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private ReactionType type;
 
     public static Reaction register(

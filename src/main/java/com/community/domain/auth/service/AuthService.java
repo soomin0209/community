@@ -9,7 +9,7 @@ import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.dto.request.UserSignupRequest;
 import com.community.domain.auth.dto.response.SignupResponse;
 import com.community.domain.user.entity.User;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
-import static com.community.common.constant.AppConstants.BLACKLIST_PREFIX;
-import static com.community.common.constant.AppConstants.REFRESH_TOKEN_PREFIX;
+import static com.community.common.constant.AppConstants.*;
 
 @Slf4j
 @Service
@@ -35,6 +34,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @Value("${jwt.accessExpire}")
+    private long accessTokenExpireTime;
 
     @Value("${jwt.refreshExpire}")
     private long refreshTokenExpireTime;
@@ -51,7 +53,7 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserType.USER);
+        User user = User.register(request.loginId(), request.nickname(), encodedPassword, UserRole.BRONZE);
         userRepository.save(user);
 
         return new SignupResponse(user.getId(), user.getLoginId(), user.getNickname());
@@ -66,7 +68,7 @@ public class AuthService {
             throw new ServiceErrorException(AuthExceptionEnum.INVALID_CREDENTIALS);
         }
 
-        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getType().name());
+        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getRole().name());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
         try {
@@ -106,7 +108,7 @@ public class AuthService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        String newAccessToken = jwtProvider.createAccessToken(user.getId(), user.getType().name());
+        String newAccessToken = jwtProvider.createAccessToken(user.getId(), user.getRole().name());
         String newRefreshToken = jwtProvider.createRefreshToken(user.getId());
 
         try {
@@ -136,6 +138,34 @@ public class AuthService {
         } catch (Exception e) {
             log.error("[AuthService] Redis Logout 처리 실패 - userId={}, msg={}", userId, e.getMessage());
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
+    }
+
+    // 권한 변경용 - refreshToken 유지
+    public void invalidateAccessToken(Long userId) {
+        try {
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_ALL_PREFIX + userId,
+                    "true",
+                    Duration.ofMillis(accessTokenExpireTime)
+            );
+        } catch (Exception e) {
+            log.warn("[AuthService] Redis Access Token 무효화 실패 - userId={}, msg={}", userId, e.getMessage());
+        }
+    }
+
+    // 강제 탈퇴용 - refreshToken 삭제
+    public void invalidateAllTokens(Long userId) {
+        try {
+            redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_ALL_PREFIX + userId,
+                    "true",
+                    Duration.ofMillis(accessTokenExpireTime)
+            );
+        } catch (Exception e) {
+            log.warn("[AuthService] Redis 모든 토큰 무효화 실패 - userId={}, msg={}", userId, e.getMessage());
         }
     }
 }

@@ -2,6 +2,7 @@ package com.community.common.config.security;
 
 import com.community.common.exception.CommonExceptionEnum;
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.community.common.constant.AppConstants.BLACKLIST_ALL_PREFIX;
 import static com.community.common.constant.AppConstants.BLACKLIST_PREFIX;
 
 @Slf4j
@@ -23,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -33,7 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (isValid) {
             try {
-                blacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+                Long userId = jwtProvider.getUserId(token);
+
+                boolean tokenBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+                boolean userBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_ALL_PREFIX + userId));
+
+                blacklisted = tokenBlacklisted || userBlacklisted;
             } catch (Exception e) {
                 log.error("[JwtAuthenticationFilter] Redis blacklist 확인 실패 - msg={}", e.getMessage());
                 throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
@@ -44,6 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("accessToken", token);
 
             Long userId = jwtProvider.getUserId(token);
+
+            if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String role = jwtProvider.getRole(token);
 
             CustomUserDetails userDetails = new CustomUserDetails(userId, role);

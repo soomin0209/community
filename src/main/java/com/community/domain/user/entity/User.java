@@ -1,12 +1,14 @@
 package com.community.domain.user.entity;
 
 import com.community.common.entity.BaseEntity;
-import com.community.domain.user.enums.UserGrade;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 import static com.community.common.constant.AppConstants.*;
 
@@ -16,6 +18,7 @@ import static com.community.common.constant.AppConstants.*;
         @Index(name = "idx_user_deleted_at", columnList = "deletedAt")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +34,8 @@ public class User extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserType type;
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
+    private UserRole role = UserRole.BRONZE;
 
     @Column(nullable = false)
     private Long visitCount = 0L;
@@ -42,23 +45,24 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private Long commentCount = 0L;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserGrade grade = UserGrade.BRONZE;
+
+    private LocalDateTime suspendedAt;
+    private Long suspendedBy;
+    private String suspendedReason;
+    private int suspensionDay;
 
     public static User register(
             String loginId,
             String nickname,
             String password,
-            UserType type
+            UserRole role
     ) {
         User user = new User();
 
         user.loginId = loginId;
         user.nickname = nickname;
         user.password = password;
-        user.type = type;
+        user.role = role;
 
         return user;
     }
@@ -71,56 +75,83 @@ public class User extends BaseEntity {
         this.password = password;
     }
 
+    public void updateRoleByManager(UserRole role) {
+        this.role = role;
+    }
+
     public void increaseVisitCount() {
         this.visitCount += 1;
-        updateGrade();
+        updateRole();
     }
 
     public void increasePostCount() {
         this.postCount += 1;
-        updateGrade();
+        updateRole();
     }
 
     public void decreasePostCount() {
         if (this.postCount > 0) {
             this.postCount -= 1;
-            updateGrade();
+            updateRole();
         }
     }
 
     public void increaseCommentCount() {
         this.commentCount += 1;
-        updateGrade();
+        updateRole();
     }
 
     public void decreaseCommentCount() {
         if (this.commentCount > 0) {
             this.commentCount -= 1;
-            updateGrade();
+            updateRole();
         }
     }
 
     public void setPostCount(Long postCount) {
         this.postCount = postCount;
-        updateGrade();
     }
 
     public void setCommentCount(Long commentCount) {
         this.commentCount = commentCount;
-        updateGrade();
     }
 
-    public void updateGrade() {
+    public void updateRole() {
+        if (this.role == UserRole.MANAGER || this.role == UserRole.ADMIN) {
+            return;
+        }
         if (this.visitCount >= GOLD_MIN_VISIT_COUNT &&
                 this.postCount >= GOLD_MIN_POST_COUNT &&
                 this.commentCount >= GOLD_MIN_COMMENT_COUNT) {
-            this.grade = UserGrade.GOLD;
+            this.role = UserRole.GOLD;
         } else if (this.visitCount >= SILVER_MIN_VISIT_COUNT &&
                 this.postCount >= SILVER_MIN_POST_COUNT &&
                 this.commentCount >= SILVER_MIN_COMMENT_COUNT) {
-            this.grade = UserGrade.SILVER;
+            this.role = UserRole.SILVER;
         } else {
-            this.grade = UserGrade.BRONZE;
+            this.role = UserRole.BRONZE;
         }
+    }
+
+    public void suspendByManager(Long managerId, String suspendedReason, int suspensionDay) {
+        this.suspendedAt = LocalDateTime.now();
+        this.suspendedBy = managerId;
+        this.suspendedReason = suspendedReason;
+        this.suspensionDay = suspensionDay;
+    }
+
+    public boolean isSuspended() {
+        if (this.getSuspendedAt() == null) {
+            return false;
+        }
+        LocalDateTime suspendedUntil = this.getSuspendedAt().plusDays(this.getSuspensionDay());
+        return LocalDateTime.now().isBefore(suspendedUntil);
+    }
+
+    public void unsuspend() {
+        this.suspendedAt = null;
+        this.suspendedBy = null;
+        this.suspendedReason = null;
+        this.suspensionDay = 0;
     }
 }

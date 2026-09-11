@@ -1,6 +1,7 @@
 package com.community.domain.reaction.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.board.service.BoardService;
 import com.community.domain.post.entity.Post;
 import com.community.domain.post.exception.PostExceptionEnum;
 import com.community.domain.post.repository.PostRepository;
@@ -8,9 +9,6 @@ import com.community.domain.reaction.dto.request.ReactionRequest;
 import com.community.domain.reaction.dto.response.ReactionResponse;
 import com.community.domain.reaction.entity.Reaction;
 import com.community.domain.reaction.repository.ReactionRepository;
-import com.community.domain.user.entity.User;
-import com.community.domain.user.exception.UserExceptionEnum;
-import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReactionService {
 
     private final ReactionRepository reactionRepository;
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final BoardService boardService;
 
     public ReactionResponse react(Long postId, Long userId, ReactionRequest request) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
-                () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
-
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        Reaction reaction = reactionRepository.findByPostIdAndUserId(post.getId(), user.getId()).orElse(null);
+        boardService.validateBoardAccess(userId, post.getBoardId());
+
+        Reaction reaction = reactionRepository.findByPostIdAndUserId(post.getId(), userId).orElse(null);
 
         if (reaction != null) {
             if (reaction.getType() == request.type()) {
@@ -41,7 +38,7 @@ public class ReactionService {
                 reaction.update(request.type());
             }
         } else {
-            reaction = Reaction.register(post.getId(), user.getId(), request.type());
+            reaction = Reaction.register(post.getId(), userId, request.type());
             reactionRepository.save(reaction);
         }
 

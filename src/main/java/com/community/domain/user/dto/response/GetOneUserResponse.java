@@ -1,5 +1,7 @@
 package com.community.domain.user.dto.response;
 
+import com.community.domain.user.enums.UserRole;
+
 import java.time.LocalDateTime;
 
 public record GetOneUserResponse(
@@ -8,5 +10,6 @@ public record GetOneUserResponse(
         LocalDateTime createdAt,
         Long visitCount,
         Long postCount,
-        Long commentCount
+        Long commentCount,
+        UserRole role
 ) {}

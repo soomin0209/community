@@ -38,7 +38,7 @@ public class Post extends BaseEntity {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private PostType type = PostType.GENERAL;
 
     @Column(nullable = false)
@@ -90,5 +90,9 @@ public class Post extends BaseEntity {
     public void unpin() {
         this.isPinned = false;
         this.pinnedAt = null;
+    }
+
+    public void move(Long boardId) {
+        this.boardId = boardId;
     }
 }

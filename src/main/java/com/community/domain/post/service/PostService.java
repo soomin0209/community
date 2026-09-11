@@ -25,7 +25,7 @@ import com.community.domain.post.repository.PostRepository;
 import com.community.domain.reaction.enums.ReactionType;
 import com.community.domain.reaction.repository.ReactionRepository;
 import com.community.domain.user.entity.User;
-import com.community.domain.user.enums.UserType;
+import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import com.community.domain.user.service.UserRankingService;
@@ -66,7 +66,7 @@ public class PostService {
 
         boardService.validateBoardAccess(userId, request.boardId());
 
-        if (request.type() == PostType.NOTICE && user.getType() != UserType.ADMIN) {
+        if (request.type() == PostType.NOTICE && user.getRole().getLevel() < UserRole.MANAGER.getLevel()) {
             throw new ServiceErrorException(PostExceptionEnum.POST_NOTICE_FORBIDDEN);
         }
 
@@ -77,7 +77,8 @@ public class PostService {
 
         List<GetAllFilesResponse> files = fileService.getAll(post.getId());
 
-        userRankingService.recordPost(user.getId());
+        userRankingService.recordPost(user);
+        user.increasePostCount();
 
         return new CreatePostResponse(
                 post.getId(),
@@ -97,7 +98,9 @@ public class PostService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        boardService.validateBoardAccess(userId, post.getBoardId());
+        if (!post.getUserId().equals(userId)) {
+            boardService.validateBoardAccess(userId, post.getBoardId());
+        }
 
         User writer = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
@@ -168,6 +171,8 @@ public class PostService {
         if (!post.getUserId().equals(user.getId())) {
             throw new ServiceErrorException(PostExceptionEnum.POST_FORBIDDEN);
         }
+
+        boardService.validateBoardAccess(user.getId(), post.getBoardId());
 
         if (request.boardId() != null && !request.boardId().equals(post.getBoardId())) {
             if (!boardRepository.existsById(request.boardId())) {

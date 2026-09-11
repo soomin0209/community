@@ -38,8 +38,12 @@ public class FileController {
 
     // 파일 다운로드
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> download(@PathVariable Long fileId) {
-        DownloadFileResponse response = fileService.download(fileId);
+    public ResponseEntity<Resource> download(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long fileId)
+    {
+        Long userId = userDetails.getUserId();
+        DownloadFileResponse response = fileService.download(fileId, userId);
 
         String encodedFilename = UriUtils.encode(response.originalFilename(), StandardCharsets.UTF_8);
 

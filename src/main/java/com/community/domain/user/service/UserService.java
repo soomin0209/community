@@ -2,6 +2,7 @@ package com.community.domain.user.service;
 
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.auth.exception.AuthExceptionEnum;
+import com.community.domain.auth.service.AuthService;
 import com.community.domain.user.dto.request.UpdateUserNicknameRequest;
 import com.community.domain.user.dto.request.UpdateUserPasswordRequest;
 import com.community.domain.user.dto.response.GetMypageResponse;
@@ -23,6 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     // 프로필 조회
     @Transactional(readOnly = true)
@@ -36,7 +38,8 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getVisitCount(),
                 user.getPostCount(),
-                user.getCommentCount()
+                user.getCommentCount(),
+                user.getRole()
         );
     }
 
@@ -53,7 +56,11 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getVisitCount(),
                 user.getPostCount(),
-                user.getCommentCount()
+                user.getCommentCount(),
+                user.getRole(),
+                user.getSuspendedAt(),
+                user.getSuspendedReason(),
+                user.getSuspendedAt() != null ? user.getSuspendedAt().plusDays(user.getSuspensionDay()) : null
         );
     }
 
@@ -104,10 +111,11 @@ public class UserService {
     }
 
     // 회원 탈퇴
-    public void withdraw(Long userId) {
+    public void withdraw(Long userId, String accessToken) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
         user.delete();
+        authService.logout(userId, accessToken);
     }
 }

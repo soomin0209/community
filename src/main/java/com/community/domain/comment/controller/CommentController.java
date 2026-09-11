@@ -41,11 +41,13 @@ public class CommentController {
     // 댓글 목록 조회
     @GetMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CursorResponse<GetAllCommentsResponse>>> getAll(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
             @Valid @ModelAttribute CommentCursorCondition condition
     ) {
+        Long userId = userDetails != null ? userDetails.getUserId() : null;
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.success(
-                HttpStatus.OK.name(), null, commentService.getAll(postId, condition)));
+                HttpStatus.OK.name(), null, commentService.getAll(postId, condition, userId)));
     }
 
     // 내 댓글 목록 조회
