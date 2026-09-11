@@ -98,7 +98,9 @@ public class PostService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        boardService.validateBoardAccess(userId, post.getBoardId());
+        if (!post.getUserId().equals(userId)) {
+            boardService.validateBoardAccess(userId, post.getBoardId());
+        }
 
         User writer = userRepository.findById(post.getUserId()).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));

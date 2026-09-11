@@ -88,7 +88,9 @@ public class FileService {
             Post post = postRepository.findByIdAndDeletedAtIsNull(file.getPostId()).orElseThrow(
                     () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-            boardService.validateBoardAccess(userId, post.getBoardId());
+            if (!post.getUserId().equals(userId)) {
+                boardService.validateBoardAccess(userId, post.getBoardId());
+            }
         } else {
             if (!file.getUserId().equals(userId)) {
                 throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);

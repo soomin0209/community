@@ -98,7 +98,9 @@ public class CommentService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(
                 () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
 
-        boardService.validateBoardAccess(userId, post.getBoardId());
+        if (!post.getUserId().equals(userId)) {
+            boardService.validateBoardAccess(userId, post.getBoardId());
+        }
 
         List<GetAllCommentsResponse> parentList = commentRepository.findParentCommentsWithCursor(
                 condition.getCursor(),
