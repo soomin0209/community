@@ -9,6 +9,9 @@ public final class AppConstants {
     public static final String TOKEN_TYPE_ACCESS = "ACCESS";
     public static final String TOKEN_TYPE_REFRESH = "REFRESH";
 
+    // CORS
+    public static final long CORS_MAX_AGE_SECONDS = 86400L; // 24시간
+
     // Redis
     // 인증
     public static final String REFRESH_TOKEN_PREFIX = "refresh:";
