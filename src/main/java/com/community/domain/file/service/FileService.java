@@ -1,14 +1,16 @@
 package com.community.domain.file.service;
 
 import com.community.common.exception.ServiceErrorException;
+import com.community.domain.board.service.BoardService;
 import com.community.domain.file.dto.response.DownloadFileResponse;
 import com.community.domain.file.dto.response.GetAllFilesResponse;
 import com.community.domain.file.dto.response.UploadFileResponse;
 import com.community.domain.file.entity.File;
 import com.community.domain.file.exception.FileExceptionEnum;
 import com.community.domain.file.repository.FileRepository;
-import com.community.domain.user.exception.UserExceptionEnum;
-import com.community.domain.user.repository.UserRepository;
+import com.community.domain.post.entity.Post;
+import com.community.domain.post.exception.PostExceptionEnum;
+import com.community.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -37,7 +39,8 @@ import static com.community.common.constant.AppConstants.*;
 public class FileService {
 
     private final FileRepository fileRepository;
-    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final BoardService boardService;
 
     // 파일 업로드
     public List<UploadFileResponse> upload(Long userId, List<MultipartFile> files) {
@@ -77,9 +80,20 @@ public class FileService {
     }
 
     // 파일 다운로드
-    public DownloadFileResponse download(Long fileId) {
+    public DownloadFileResponse download(Long fileId, Long userId) {
         File file = fileRepository.findByIdAndDeletedAtIsNull(fileId).orElseThrow(
                 () -> new ServiceErrorException(FileExceptionEnum.FILE_NOT_FOUND));
+
+        if (file.getPostId() != null) {
+            Post post = postRepository.findByIdAndDeletedAtIsNull(file.getPostId()).orElseThrow(
+                    () -> new ServiceErrorException(PostExceptionEnum.POST_NOT_FOUND));
+
+            boardService.validateBoardAccess(userId, post.getBoardId());
+        } else {
+            if (!file.getUserId().equals(userId)) {
+                throw new ServiceErrorException(FileExceptionEnum.FILE_FORBIDDEN);
+            }
+        }
 
         Path path = Paths.get(file.getStoredPath());
         validateFileExists(path);
