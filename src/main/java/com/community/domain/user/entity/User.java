@@ -46,10 +46,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Long commentCount = 0L;
 
-    private LocalDateTime suspendedAt;
-    private Long suspendedBy;
-    private String suspendedReason;
-    private int suspensionDay;
+    private LocalDateTime suspendedUntil;
 
     public static User register(
             String loginId,
@@ -133,25 +130,23 @@ public class User extends BaseEntity {
         }
     }
 
-    public void suspendByManager(Long managerId, String suspendedReason, int suspensionDay) {
-        this.suspendedAt = LocalDateTime.now();
-        this.suspendedBy = managerId;
-        this.suspendedReason = suspendedReason;
-        this.suspensionDay = suspensionDay;
-    }
-
     public boolean isSuspended() {
-        if (this.getSuspendedAt() == null) {
+        if (this.suspendedUntil == null) {
             return false;
         }
-        LocalDateTime suspendedUntil = this.getSuspendedAt().plusDays(this.getSuspensionDay());
+
         return LocalDateTime.now().isBefore(suspendedUntil);
     }
 
-    public void unsuspend() {
-        this.suspendedAt = null;
-        this.suspendedBy = null;
-        this.suspendedReason = null;
-        this.suspensionDay = 0;
+    public void updateSuspendedUntil(LocalDateTime now, int day) {
+        if (this.suspendedUntil == null || this.suspendedUntil.isBefore(now)) {
+            this.suspendedUntil = now.plusDays(day);
+        } else {
+            this.suspendedUntil = this.suspendedUntil.plusDays(day);
+        }
+    }
+
+    public void resetSuspendedUntil() {
+        this.suspendedUntil = null;
     }
 }
