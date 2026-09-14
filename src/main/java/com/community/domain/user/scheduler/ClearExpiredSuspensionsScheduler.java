@@ -1,13 +1,16 @@
 package com.community.domain.user.scheduler;
 
 import com.community.domain.user.entity.User;
+import com.community.domain.user.entity.UserSuspension;
 import com.community.domain.user.repository.UserRepository;
+import com.community.domain.user.repository.UserSuspensionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -16,17 +19,23 @@ import java.util.List;
 public class ClearExpiredSuspensionsScheduler {
 
     private final UserRepository userRepository;
+    private final UserSuspensionRepository userSuspensionRepository;
 
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void clearExpiredSuspensions() {
         log.info("[ClearExpiredSuspensionsScheduler] 정지 기간 만료 사용자 정리 시작");
         int count = 0;
+        LocalDateTime now = LocalDateTime.now();
 
-        List<User> userList = userRepository.findAllBySuspendedAtIsNotNull();
+        List<User> userList = userRepository.findAllBySuspendedUntilIsNotNull();
         for (User user : userList) {
-            if (!user.isSuspended()) {
-                user.unsuspend();
+            if (user.getSuspendedUntil().isBefore(now)) {
+                List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
+                for (UserSuspension suspension : suspensionList) {
+                    suspension.unsuspend(now);
+                }
+                user.resetSuspendedUntil();
                 count++;
             }
         }

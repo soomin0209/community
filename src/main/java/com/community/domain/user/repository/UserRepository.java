@@ -21,5 +21,5 @@ public interface UserRepository extends JpaRepository<User, Long>, UserCustomRep
 
     List<User> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
 
-    List<User> findAllBySuspendedAtIsNotNull();
+    List<User> findAllBySuspendedUntilIsNotNull();
 }
