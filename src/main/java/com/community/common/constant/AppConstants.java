@@ -1,5 +1,6 @@
 package com.community.common.constant;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public final class AppConstants {
@@ -60,4 +61,7 @@ public final class AppConstants {
             "exe", "bat", "sh", "jar", "war", "dll",
             "jsp", "php", "asp", "aspx"
     );
+
+    // 영구 정지
+    public static final LocalDateTime PERMANENT_SUSPENSION_DATE = LocalDateTime.of(9999, 12, 31, 23, 59, 59);
 }

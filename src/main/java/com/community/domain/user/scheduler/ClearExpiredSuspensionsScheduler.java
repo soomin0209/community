@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.community.common.constant.AppConstants.PERMANENT_SUSPENSION_DATE;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class ClearExpiredSuspensionsScheduler {
 
         List<User> userList = userRepository.findAllBySuspendedUntilIsNotNull();
         for (User user : userList) {
-            if (user.getSuspendedUntil().equals(LocalDateTime.MAX)) {
+            if (user.getSuspendedUntil().equals(PERMANENT_SUSPENSION_DATE)) {
                 continue;
             }
 
