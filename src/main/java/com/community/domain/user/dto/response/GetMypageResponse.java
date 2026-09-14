@@ -1,5 +1,6 @@
 package com.community.domain.user.dto.response;
 
+import com.community.domain.user.dto.projection.UserSuspensionProjection;
 import com.community.domain.user.enums.UserRole;
 
 import java.time.LocalDateTime;

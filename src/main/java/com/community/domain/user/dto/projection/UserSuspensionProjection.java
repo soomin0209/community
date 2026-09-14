@@ -1,4 +1,4 @@
-package com.community.domain.user.dto.response;
+package com.community.domain.user.dto.projection;
 
 import java.time.LocalDateTime;
 

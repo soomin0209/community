@@ -3,6 +3,7 @@ package com.community.domain.user.service;
 import com.community.common.exception.ServiceErrorException;
 import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.service.AuthService;
+import com.community.domain.user.dto.projection.UserSuspensionProjection;
 import com.community.domain.user.dto.request.UpdateUserNicknameRequest;
 import com.community.domain.user.dto.request.UpdateUserPasswordRequest;
 import com.community.domain.user.dto.response.*;
