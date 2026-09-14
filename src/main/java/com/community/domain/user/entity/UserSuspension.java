@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +13,6 @@ import java.time.LocalDateTime;
         @Index(name = "idx_user_suspension_user_id_unsuspended_at", columnList = "deletedAt, unsuspendedAt")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
 public class UserSuspension {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,19 +31,19 @@ public class UserSuspension {
 
     private Integer day;
 
-    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime suspendedAt;
 
     private LocalDateTime unsuspendedAt;
 
-    public static UserSuspension suspend(User user, User manager, String reason, Integer day) {
+    public static UserSuspension suspend(User user, User manager, String reason, Integer day, LocalDateTime now) {
         UserSuspension suspension = new UserSuspension();
 
         suspension.user = user;
         suspension.manager = manager;
         suspension.reason = reason;
         suspension.day = day;
+        suspension.suspendedAt = now;
 
         return suspension;
     }
