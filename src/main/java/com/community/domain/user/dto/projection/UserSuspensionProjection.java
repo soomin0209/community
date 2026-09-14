@@ -5,6 +5,6 @@ import java.time.LocalDateTime;
 public record UserSuspensionProjection(
         Long id,
         String reason,
-        int day,
+        Integer day,
         LocalDateTime suspendedAt
 ) {}
