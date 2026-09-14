@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "user_suspensions", indexes = {
-        @Index(name = "idx_user_suspension_user_id_unsuspended_at", columnList = "deletedAt, unsuspendedAt")
+        @Index(name = "idx_user_suspension_user_id_unsuspended_at", columnList = "userId, unsuspendedAt")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserSuspension {
@@ -48,7 +48,7 @@ public class UserSuspension {
         return suspension;
     }
 
-    public void unsuspend() {
-        this.unsuspendedAt = LocalDateTime.now();
+    public void unsuspend(LocalDateTime now) {
+        this.unsuspendedAt = now;
     }
 }

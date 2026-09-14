@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +79,14 @@ public class UserManagerService {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_SUSPENDED);
         }
 
-        user.unsuspend();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
+        for (UserSuspension suspension : suspensionList) {
+            suspension.unsuspend(now);
+        }
+
+        user.resetSuspendedUntil();
     }
 
     // 회원 강제 탈퇴
