@@ -30,6 +30,10 @@ public class ClearExpiredSuspensionsScheduler {
 
         List<User> userList = userRepository.findAllBySuspendedUntilIsNotNull();
         for (User user : userList) {
+            if (user.getSuspendedUntil().equals(LocalDateTime.MAX)) {
+                continue;
+            }
+
             if (user.getSuspendedUntil().isBefore(now)) {
                 List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
                 for (UserSuspension suspension : suspensionList) {

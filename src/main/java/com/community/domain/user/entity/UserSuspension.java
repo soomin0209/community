@@ -31,18 +31,35 @@ public class UserSuspension {
 
     private Integer day;
 
+    @Column(nullable = false)
+    private boolean isPermanent = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime suspendedAt;
 
     private LocalDateTime unsuspendedAt;
 
-    public static UserSuspension suspend(User user, User manager, String reason, Integer day, LocalDateTime now) {
+    public static UserSuspension temporarilySuspend(User user, User manager, String reason, int day, LocalDateTime now) {
         UserSuspension suspension = new UserSuspension();
 
         suspension.user = user;
         suspension.manager = manager;
         suspension.reason = reason;
         suspension.day = day;
+        suspension.isPermanent = false;
+        suspension.suspendedAt = now;
+
+        return suspension;
+    }
+
+    public static UserSuspension permanentlySuspend(User user, User manager, String reason, LocalDateTime now) {
+        UserSuspension suspension = new UserSuspension();
+
+        suspension.user = user;
+        suspension.manager = manager;
+        suspension.reason = reason;
+        suspension.day = null;
+        suspension.isPermanent = true;
         suspension.suspendedAt = now;
 
         return suspension;

@@ -56,10 +56,15 @@ public class UserManagerService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        UserSuspension suspension = UserSuspension.suspend(user, manager, request.suspendedReason(), request.suspensionDay(), now);
+        UserSuspension suspension;
+        if (request.isPermanent()) {
+            suspension = UserSuspension.permanentlySuspend(user, manager, request.suspendedReason(), now);
+        } else  {
+            suspension = UserSuspension.temporarilySuspend(user, manager, request.suspendedReason(), request.suspensionDay(), now);
+        }
         userSuspensionRepository.save(suspension);
 
-        user.updateSuspendedUntil(now, request.suspensionDay());
+        user.updateSuspendedUntil(now, request.suspensionDay(), request.isPermanent());
 
         return new SuspendUserResponse(
                 user.getId(),

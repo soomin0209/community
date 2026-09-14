@@ -138,7 +138,11 @@ public class User extends BaseEntity {
         return LocalDateTime.now().isBefore(suspendedUntil);
     }
 
-    public void updateSuspendedUntil(LocalDateTime now, int day) {
+    public void updateSuspendedUntil(LocalDateTime now, Integer day, boolean isPermanent) {
+        if (isPermanent) {
+            this.suspendedUntil = LocalDateTime.MAX;
+            return;
+        }
         if (this.suspendedUntil == null || this.suspendedUntil.isBefore(now)) {
             this.suspendedUntil = now.plusDays(day);
         } else {
