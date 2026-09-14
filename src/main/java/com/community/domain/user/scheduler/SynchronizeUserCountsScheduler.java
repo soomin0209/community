@@ -1,6 +1,6 @@
 package com.community.domain.user.scheduler;
 
-import com.community.domain.user.dto.UserCountProjection;
+import com.community.domain.user.dto.projection.UserCountProjection;
 import com.community.domain.user.entity.User;
 import com.community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

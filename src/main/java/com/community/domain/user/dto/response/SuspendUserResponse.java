@@ -6,6 +6,6 @@ public record SuspendUserResponse(
         Long userId,
         LocalDateTime suspendedAt,
         String suspendedReason,
-        int suspensionDay,
+        Integer suspensionDay,
         LocalDateTime suspendedUntil
 ) {}

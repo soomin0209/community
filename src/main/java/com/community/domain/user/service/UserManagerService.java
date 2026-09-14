@@ -7,11 +7,16 @@ import com.community.domain.user.dto.request.UpdateUserRoleRequest;
 import com.community.domain.user.dto.response.SuspendUserResponse;
 import com.community.domain.user.dto.response.UpdateUserRoleResponse;
 import com.community.domain.user.entity.User;
+import com.community.domain.user.entity.UserSuspension;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
+import com.community.domain.user.repository.UserSuspensionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,7 @@ public class UserManagerService {
 
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final UserSuspensionRepository userSuspensionRepository;
 
     // 회원 등급 변경
     public UpdateUserRoleResponse updateRole(Long managerId, Long userId, UpdateUserRoleRequest request) {
@@ -48,18 +54,24 @@ public class UserManagerService {
         User manager = managerAndUser.manager();
         User user = managerAndUser.user();
 
-        if (user.isSuspended()) {
-            throw new ServiceErrorException(UserExceptionEnum.USER_ALREADY_SUSPENDED);
-        }
+        LocalDateTime now = LocalDateTime.now();
 
-        user.suspendByManager(manager.getId(), request.suspendedReason(), request.suspensionDay());
+        UserSuspension suspension;
+        if (request.isPermanent()) {
+            suspension = UserSuspension.permanentlySuspend(user, manager, request.suspendedReason(), now);
+        } else  {
+            suspension = UserSuspension.temporarilySuspend(user, manager, request.suspendedReason(), request.suspensionDay(), now);
+        }
+        userSuspensionRepository.save(suspension);
+
+        user.updateSuspendedUntil(now, request.suspensionDay(), request.isPermanent());
 
         return new SuspendUserResponse(
                 user.getId(),
-                user.getSuspendedAt(),
-                user.getSuspendedReason(),
-                user.getSuspensionDay(),
-                user.getSuspendedAt().plusDays(user.getSuspensionDay())
+                suspension.getSuspendedAt(),
+                suspension.getReason(),
+                suspension.getDay(),
+                user.getSuspendedUntil()
         );
     }
 
@@ -72,7 +84,14 @@ public class UserManagerService {
             throw new ServiceErrorException(UserExceptionEnum.USER_NOT_SUSPENDED);
         }
 
-        user.unsuspend();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
+        for (UserSuspension suspension : suspensionList) {
+            suspension.unsuspend(now);
+        }
+
+        user.resetSuspendedUntil();
     }
 
     // 회원 강제 탈퇴
