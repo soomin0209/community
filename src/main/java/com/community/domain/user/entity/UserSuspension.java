@@ -39,4 +39,19 @@ public class UserSuspension {
     private LocalDateTime suspendedAt;
 
     private LocalDateTime unsuspendedAt;
+
+    public static UserSuspension suspend(User user, User manager, String reason, Integer day) {
+        UserSuspension suspension = new UserSuspension();
+
+        suspension.user = user;
+        suspension.manager = manager;
+        suspension.reason = reason;
+        suspension.day = day;
+
+        return suspension;
+    }
+
+    public void unsuspend() {
+        this.unsuspendedAt = LocalDateTime.now();
+    }
 }
