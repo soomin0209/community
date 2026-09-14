@@ -14,6 +14,6 @@ public record GetMypageResponse(
         Long postCount,
         Long commentCount,
         UserRole role,
-        List<UserSuspensionResponse> suspensions,
+        List<UserSuspensionProjection> suspensions,
         LocalDateTime suspendedUntil
 ) {}

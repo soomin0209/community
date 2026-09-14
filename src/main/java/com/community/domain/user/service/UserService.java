@@ -53,19 +53,19 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
-        List<UserSuspensionResponse> suspensionResponses = new ArrayList<>();
+        List<UserSuspensionProjection> suspensionProjections = new ArrayList<>();
         LocalDateTime suspendedUntil = null;
 
         if (user.isSuspended()) {
             List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
             for (UserSuspension suspension : suspensionList) {
-                UserSuspensionResponse suspensionResponse = new UserSuspensionResponse(
+                UserSuspensionProjection suspensionProjection = new UserSuspensionProjection(
                         user.getId(),
                         suspension.getReason(),
                         suspension.getDay(),
                         suspension.getSuspendedAt()
                 );
-                suspensionResponses.add(suspensionResponse);
+                suspensionProjections.add(suspensionProjection);
             }
             suspendedUntil = user.getSuspendedUntil();
         }
@@ -79,7 +79,7 @@ public class UserService {
                 user.getPostCount(),
                 user.getCommentCount(),
                 user.getRole(),
-                suspensionResponses,
+                suspensionProjections,
                 suspendedUntil
         );
     }

@@ -2,7 +2,7 @@ package com.community.domain.user.dto.response;
 
 import java.time.LocalDateTime;
 
-public record UserSuspensionResponse(
+public record UserSuspensionProjection(
         Long id,
         String reason,
         int day,
