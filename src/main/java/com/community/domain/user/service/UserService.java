@@ -5,17 +5,20 @@ import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.auth.service.AuthService;
 import com.community.domain.user.dto.request.UpdateUserNicknameRequest;
 import com.community.domain.user.dto.request.UpdateUserPasswordRequest;
-import com.community.domain.user.dto.response.GetMypageResponse;
-import com.community.domain.user.dto.response.GetOneUserResponse;
-import com.community.domain.user.dto.response.UpdateUserNicknameResponse;
-import com.community.domain.user.dto.response.UpdateUserPasswordResponse;
+import com.community.domain.user.dto.response.*;
 import com.community.domain.user.entity.User;
+import com.community.domain.user.entity.UserSuspension;
 import com.community.domain.user.exception.UserExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
+import com.community.domain.user.repository.UserSuspensionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final UserSuspensionRepository userSuspensionRepository;
 
     // 프로필 조회
     @Transactional(readOnly = true)
@@ -49,6 +53,23 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
+        List<UserSuspensionResponse> suspensionResponses = new ArrayList<>();
+        LocalDateTime suspendedUntil = null;
+
+        if (user.isSuspended()) {
+            List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
+            for (UserSuspension suspension : suspensionList) {
+                UserSuspensionResponse suspensionResponse = new UserSuspensionResponse(
+                        user.getId(),
+                        suspension.getReason(),
+                        suspension.getDay(),
+                        suspension.getSuspendedAt()
+                );
+                suspensionResponses.add(suspensionResponse);
+            }
+            suspendedUntil = user.getSuspendedUntil();
+        }
+
         return new GetMypageResponse(
                 user.getId(),
                 user.getLoginId(),
@@ -58,9 +79,8 @@ public class UserService {
                 user.getPostCount(),
                 user.getCommentCount(),
                 user.getRole(),
-                user.getSuspendedAt(),
-                user.getSuspendedReason(),
-                user.getSuspendedAt() != null ? user.getSuspendedAt().plusDays(user.getSuspensionDay()) : null
+                suspensionResponses,
+                suspendedUntil
         );
     }
 

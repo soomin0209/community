@@ -3,6 +3,7 @@ package com.community.domain.user.dto.response;
 import com.community.domain.user.enums.UserRole;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record GetMypageResponse(
         Long id,
@@ -13,7 +14,6 @@ public record GetMypageResponse(
         Long postCount,
         Long commentCount,
         UserRole role,
-        LocalDateTime suspendedAt,
-        String suspendedReason,
+        List<UserSuspensionResponse> suspensions,
         LocalDateTime suspendedUntil
 ) {}
