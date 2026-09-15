@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파일 다운로드 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .info p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📥 파일 다운로드 테스트</h1>
+
+    <div class="info">
+        <p><strong>사용 방법:</strong></p>
+        <p>1. 로그인 후 받은 액세스 토큰을 입력하세요</p>
+        <p>2. 다운로드할 파일 ID를 입력하세요</p>
+        <p>3. API 엔드포인트: <code>GET /api/files/download/{id}</code></p>
+    </div>
+
+    <div class="form-group">
+        <label for="token">액세스 토큰</label>
+        <input
+                type="text"
+                id="token"
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        />
+    </div>
+
+    <div class="form-group">
+        <label for="fileId">파일 ID</label>
+        <input
+                type="number"
+                id="fileId"
+                placeholder="1"
+                min="1"
+        />
+    </div>
+
+    <button onclick="downloadFile()">다운로드</button>
+
+    <div id="message" class="message"></div>
+</div>
+
+<script>
+    async function downloadFile() {
+        const token = document.getElementById('token').value.trim();
+        const fileId = document.getElementById('fileId').value.trim();
+        const apiUrl = 'http://localhost:8080';
+        const messageEl = document.getElementById('message');
+        const button = document.querySelector('button');
+
+        // 입력 검증
+        if (!token) {
+            showMessage('액세스 토큰을 입력해주세요.', 'error');
+            return;
+        }
+
+        if (!fileId) {
+            showMessage('파일 ID를 입력해주세요.', 'error');
+            return;
+        }
+
+        try {
+            button.disabled = true;
+            button.textContent = '다운로드 중...';
+            showMessage('파일을 다운로드하는 중입니다...', 'success');
+
+            console.log('요청 URL:', `${apiUrl}/api/files/download/${fileId}`);
+            console.log('토큰:', token);
+
+            const response = await fetch(`${apiUrl}/api/files/download/${fileId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            console.log('응답 상태:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.log('에러 응답:', errorText);
+                let errorMessage = '';
+
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || `다운로드 실패 (${response.status})`;
+                } catch {
+                    errorMessage = `다운로드 실패 (${response.status}): ${errorText}`;
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Content-Disposition 헤더에서 파일명 추출
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'download';
+
+            console.log('Content-Disposition:', contentDisposition);
+
+            if (contentDisposition) {
+                // filename*=UTF-8''인코딩된파일명 형식 파싱
+                const utf8Match = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/);
+                if (utf8Match) {
+                    filename = decodeURIComponent(utf8Match[1]);
+                    console.log('추출된 파일명 (UTF-8):', filename);
+                } else {
+                    // 일반 filename="파일명" 형식 파싱 (fallback)
+                    const normalMatch = contentDisposition.match(/filename="(.+?)"/);
+                    if (normalMatch) {
+                        filename = normalMatch[1];
+                        console.log('추출된 파일명 (일반):', filename);
+                    }
+                }
+            }
+
+            // Blob으로 변환하여 다운로드
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+
+            // 메모리 정리
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showMessage(`파일 다운로드 완료: ${filename}`, 'success');
+        } catch (error) {
+            console.error('다운로드 에러:', error);
+            let errorMsg = error.message;
+            if (error.message === 'Failed to fetch') {
+                errorMsg = '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인하세요. (CORS 또는 네트워크 오류)';
+            }
+            showMessage(`오류: ${errorMsg}`, 'error');
+        } finally {
+            button.disabled = false;
+            button.textContent = '다운로드';
+        }
+    }
+
+    function showMessage(text, type) {
+        const messageEl = document.getElementById('message');
+        messageEl.textContent = text;
+        messageEl.className = `message ${type} show`;
+    }
+
+    // Enter 키로 다운로드
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            downloadFile();
+        }
+    });
+</script>
+</body>
+</html>
