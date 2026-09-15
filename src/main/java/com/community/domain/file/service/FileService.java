@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import static com.community.common.constant.AppConstants.*;
 
@@ -202,10 +203,9 @@ public class FileService {
             String year = now.format(DateTimeFormatter.ofPattern("yyyy"));
             String month = now.format(DateTimeFormatter.ofPattern("MM"));
             String day = now.format(DateTimeFormatter.ofPattern("dd"));
-            String time = now.format(DateTimeFormatter.ofPattern("HH-mm-ss-SSS"));
 
             String folderPath = FILE_UPLOAD_DIR + year + "/" + month + "/" + day + "/";
-            String storedFileName = time + "_" + file.getOriginalFilename();
+            String storedFileName = UUID.randomUUID().toString();
             Path uploadPath = Paths.get(folderPath);
             Path filePath = uploadPath.resolve(storedFileName);
 
