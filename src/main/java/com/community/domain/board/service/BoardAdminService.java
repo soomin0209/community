@@ -30,7 +30,7 @@ public class BoardAdminService {
         Board board = Board.register(request.name(), request.minRole());
         boardRepository.save(board);
 
-        return new CreateBoardResponse(board.getId(), board.getName(), board.getCreatedAt());
+        return new CreateBoardResponse(board.getId(), board.getName(), board.getMinRole(), board.getCreatedAt());
     }
 
     // 게시판 수정
@@ -49,6 +49,7 @@ public class BoardAdminService {
         return new UpdateBoardResponse(
                 board.getId(),
                 board.getName(),
+                board.getMinRole(),
                 board.getCreatedAt(),
                 board.getUpdatedAt()
         );
