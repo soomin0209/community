@@ -18,9 +18,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:3000")    // 리액트 개발 서버
+                .allowedOrigins("http://localhost:3000", "http://localhost:63342")    // 리액트 개발 서버, 인텔리제이 내장 웹 서버
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
+                .exposedHeaders("Content-Disposition", "Content-Type", "Content-Length")    // JavaScript에서 읽을 수 있는 헤더
                 .allowCredentials(true)
                 .maxAge(CORS_MAX_AGE_SECONDS);
     }
