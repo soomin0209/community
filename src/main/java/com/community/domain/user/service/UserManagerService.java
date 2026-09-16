@@ -78,6 +78,7 @@ public class UserManagerService {
     // 회원 활동 정지 해제
     public void unsuspend(Long managerId, Long userId) {
         ManagerAndUser managerAndUser = validateManagerAndUser(managerId, userId);
+        User manager = managerAndUser.manager();
         User user = managerAndUser.user();
 
         if (!user.isSuspended()) {
@@ -88,7 +89,7 @@ public class UserManagerService {
 
         List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
         for (UserSuspension suspension : suspensionList) {
-            suspension.unsuspend(now);
+            suspension.unsuspend(now, manager);
         }
 
         user.resetSuspendedUntil();
