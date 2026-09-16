@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -153,6 +154,138 @@ class UserManagerServiceTest {
     @Test
     @DisplayName("회원 활동 정지 해제 성공")
     void unsuspend_success() {
+        // given
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
 
+        User user = User.register("bronze_user", "브론즈유저",  "password", UserRole.BRONZE);
+        ReflectionTestUtils.setField(user, "id", 2L);
+
+        UserSuspension suspension1 = UserSuspension.temporarilySuspend(user, manager, "욕설", 3, LocalDateTime.now());
+        UserSuspension suspension2 = UserSuspension.temporarilySuspend(user, manager, "신고", 7, LocalDateTime.now());
+        ReflectionTestUtils.setField(user, "suspendedUntil", LocalDateTime.now().plusDays(10));
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+        given(userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId())).willReturn(List.of(suspension1, suspension2));
+
+        // when
+        userManagerService.unsuspend(manager.getId(), user.getId());
+
+        // then
+        assertThat(user.isSuspended()).isFalse();
+        assertThat(user.getSuspendedUntil()).isNull();
+        assertThat(suspension1.getUnsuspendedAt()).isNotNull();
+        assertThat(suspension2.getUnsuspendedAt()).isNotNull();
+        assertThat(suspension1.getUnsuspendedBy()).isEqualTo(manager);
+        assertThat(suspension2.getUnsuspendedBy()).isEqualTo(manager);
+    }
+
+    @Test
+    @DisplayName("회원 활동 정지 해제 실패 - 사용자가 정지 상태가 아님")
+    void unsuspend_fail_userIsNotSuspended() {
+        // given
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+
+        User user = User.register("bronze_user", "브론즈유저",  "password", UserRole.BRONZE);
+        ReflectionTestUtils.setField(user, "id", 2L);
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        // when & then
+        assertThatThrownBy(() -> userManagerService.unsuspend(manager.getId(), user.getId()))
+                .isInstanceOf(ServiceErrorException.class)
+                .hasMessage(UserExceptionEnum.USER_NOT_SUSPENDED.getMessage());
+    }
+
+
+    // ========== 회원 강제 탈퇴 ==========
+    @Test
+    @DisplayName("회원 강제 탈퇴 성공")
+    void withdraw_success() {
+        // given
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+
+        User user = User.register("bronze_user", "브론즈유저",  "password", UserRole.BRONZE);
+        ReflectionTestUtils.setField(user, "id", 2L);
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        // when
+        userManagerService.withdraw(manager.getId(), user.getId());
+
+        // then
+        assertThat(user.getDeletedAt()).isNotNull();
+        assertThat(user.getDeletedBy()).isEqualTo(manager.getId());
+    }
+
+
+    // ========== Manager User 검증 ==========
+    @Test
+    @DisplayName("Manager User 검증 실패 - 매니저와 사용자 같음")
+    void validateManagerAndUser_fail_areTheSame() {
+        // given
+        User user = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(user, "id", 1L);
+
+        // when & then
+        assertThatThrownBy(() -> userManagerService.withdraw(user.getId(), user.getId()))
+                .isInstanceOf(ServiceErrorException.class)
+                .hasMessage(UserExceptionEnum.CANNOT_MODIFY_SELF.getMessage());
+    }
+
+    @Test
+    @DisplayName("Manager User 검증 실패 - 매니저 없음")
+    void validateManagerAndUser_fail_managerNotFound() {
+        // given
+        Long managerId = 99L;
+        Long userId = 1L;
+
+        given(userRepository.findByIdAndDeletedAtIsNull(managerId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userManagerService.withdraw(managerId, userId))
+                .isInstanceOf(ServiceErrorException.class)
+                .hasMessage(UserExceptionEnum.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("Manager User 검증 실패 - 사용자 없음")
+    void validateManagerAndUser_fail_userNotFound() {
+        // given
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+        Long userId = 99L;
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userManagerService.withdraw(manager.getId(), userId))
+                .isInstanceOf(ServiceErrorException.class)
+                .hasMessage(UserExceptionEnum.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("Manager User 검증 실패 - 매니저보다 사용자 등급 높음")
+    void validateManagerAndUser_fail_userRoleIsHigherThenManager() {
+        // given
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+
+        User user = User.register("admin", "관리자",  "password", UserRole.ADMIN);
+        ReflectionTestUtils.setField(user, "id", 2L);
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        // when & then
+        assertThatThrownBy(() -> userManagerService.withdraw(manager.getId(), user.getId()))
+                .isInstanceOf(ServiceErrorException.class)
+                .hasMessage(UserExceptionEnum.USER_MODIFICATION_FORBIDDEN.getMessage());
     }
 }
