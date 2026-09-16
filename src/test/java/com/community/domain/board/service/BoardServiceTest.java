@@ -120,7 +120,7 @@ class BoardServiceTest {
 
     @Test
     @DisplayName("게시판 접근 권한 검증 실패 - 게시판 없음")
-    void validateBoardAccess_fail_noBoard() {
+    void validateBoardAccess_fail_boardNotFound() {
         // given
         Long userId = 1L;
         Long boardId = 99L;
