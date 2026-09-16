@@ -149,6 +149,89 @@ class UserManagerServiceTest {
         assertThat(user.isSuspended()).isTrue();
     }
 
+    @Test
+    @DisplayName("회원 활동 정지 성공 - 이미 정지 상태일 시 suspendedUntil 업데이트")
+    void suspend_success_alreadySuspended() {
+        // given
+        SuspendUserRequest request = new SuspendUserRequest("욕설", 3, false);
+
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+
+        User user = User.register("bronze_user", "브론즈유저",  "password", UserRole.BRONZE);
+        ReflectionTestUtils.setField(user, "id", 2L);
+        // 이미 정지
+        LocalDateTime suspendedUntil = LocalDateTime.now().plusDays(10);
+        ReflectionTestUtils.setField(user, "suspendedUntil", suspendedUntil);
+
+        UserSuspension suspension = UserSuspension.permanentlySuspend(user, manager, request.suspendedReason(), LocalDateTime.now());
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+        given(userSuspensionRepository.save(any(UserSuspension.class))).willReturn(suspension);
+
+        // when
+        SuspendUserResponse response = userManagerService.suspend(manager.getId(), user.getId(), request);
+
+        // then
+        assertThat(response.suspendedUntil()).isEqualTo(suspendedUntil.plusDays(request.suspensionDay()));
+    }
+
+    @Test
+    @DisplayName("회원 활동 정지 성공 - 이미 영구 정지 시 suspendedUntil 변경 안됨")
+    void suspend_success_alreadyPermanentlySuspended() {
+        // given
+        SuspendUserRequest request = new SuspendUserRequest("욕설", 3, false);
+
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+
+        User user = User.register("bronze_user", "브론즈유저",  "password", UserRole.BRONZE);
+        ReflectionTestUtils.setField(user, "id", 2L);
+        // 이미 영구 정지
+        ReflectionTestUtils.setField(user, "suspendedUntil", LocalDateTime.of(9999, 12, 31, 23, 59, 59));
+
+        UserSuspension suspension = UserSuspension.permanentlySuspend(user, manager, request.suspendedReason(), LocalDateTime.now());
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+        given(userSuspensionRepository.save(any(UserSuspension.class))).willReturn(suspension);
+
+        // when
+        SuspendUserResponse response = userManagerService.suspend(manager.getId(), user.getId(), request);
+
+        // then
+        assertThat(response.suspendedUntil()).isEqualTo(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
+    }
+
+    @Test
+    @DisplayName("회원 활동 정지 성공 - suspendedUntil이 과거일 때")
+    void suspend_success_suspendedUntilIsThePast() {
+        // given
+        SuspendUserRequest request = new SuspendUserRequest("욕설", 3, false);
+
+        User manager = User.register("manager", "매니저", "password", UserRole.MANAGER);
+        ReflectionTestUtils.setField(manager, "id", 1L);
+
+        User user = User.register("bronze_user", "브론즈유저",  "password", UserRole.BRONZE);
+        ReflectionTestUtils.setField(user, "id", 2L);
+        // 정지 기간 만료
+        ReflectionTestUtils.setField(user, "suspendedUntil", LocalDateTime.now().minusDays(1));
+
+        UserSuspension suspension = UserSuspension.permanentlySuspend(user, manager, request.suspendedReason(), LocalDateTime.now());
+
+        given(userRepository.findByIdAndDeletedAtIsNull(manager.getId())).willReturn(Optional.of(manager));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+        given(userSuspensionRepository.save(any(UserSuspension.class))).willReturn(suspension);
+
+        // when
+        SuspendUserResponse response = userManagerService.suspend(manager.getId(), user.getId(), request);
+
+        // then
+        LocalDateTime expected = LocalDateTime.now().plusDays(request.suspensionDay());
+        assertThat(response.suspendedUntil()).isBetween(expected.minusMinutes(1), expected.plusDays(1));
+    }
+
 
     // ========== 회원 활동 정지 해제 ==========
     @Test
