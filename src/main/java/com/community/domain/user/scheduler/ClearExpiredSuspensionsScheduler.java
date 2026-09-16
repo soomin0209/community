@@ -39,7 +39,7 @@ public class ClearExpiredSuspensionsScheduler {
             if (user.getSuspendedUntil().isBefore(now)) {
                 List<UserSuspension> suspensionList = userSuspensionRepository.findAllByUserIdAndUnsuspendedAtIsNull(user.getId());
                 for (UserSuspension suspension : suspensionList) {
-                    suspension.unsuspend(now);
+                    suspension.unsuspend(now, null);
                 }
                 user.resetSuspendedUntil();
                 count++;

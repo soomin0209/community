@@ -23,8 +23,8 @@ public class UserSuspension {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id")
-    private User manager;
+    @JoinColumn(name = "suspended_by")
+    private User suspendedBy;
 
     @Column(nullable = false, length = 50)
     private String reason;
@@ -37,13 +37,17 @@ public class UserSuspension {
     @Column(nullable = false, updatable = false)
     private LocalDateTime suspendedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unsuspended_by")
+    private User unsuspendedBy;
+
     private LocalDateTime unsuspendedAt;
 
-    public static UserSuspension temporarilySuspend(User user, User manager, String reason, int day, LocalDateTime now) {
+    public static UserSuspension temporarilySuspend(User user, User suspendedBy, String reason, int day, LocalDateTime now) {
         UserSuspension suspension = new UserSuspension();
 
         suspension.user = user;
-        suspension.manager = manager;
+        suspension.suspendedBy = suspendedBy;
         suspension.reason = reason;
         suspension.day = day;
         suspension.isPermanent = false;
@@ -52,11 +56,11 @@ public class UserSuspension {
         return suspension;
     }
 
-    public static UserSuspension permanentlySuspend(User user, User manager, String reason, LocalDateTime now) {
+    public static UserSuspension permanentlySuspend(User user, User suspendedBy, String reason, LocalDateTime now) {
         UserSuspension suspension = new UserSuspension();
 
         suspension.user = user;
-        suspension.manager = manager;
+        suspension.suspendedBy = suspendedBy;
         suspension.reason = reason;
         suspension.day = null;
         suspension.isPermanent = true;
@@ -65,7 +69,8 @@ public class UserSuspension {
         return suspension;
     }
 
-    public void unsuspend(LocalDateTime now) {
+    public void unsuspend(LocalDateTime now, User unsuspendedBy) {
         this.unsuspendedAt = now;
+        this.unsuspendedBy = unsuspendedBy;
     }
 }
