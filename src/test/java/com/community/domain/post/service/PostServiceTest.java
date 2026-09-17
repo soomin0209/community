@@ -572,7 +572,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("게시물 삭제 성공 - 댓글 작성자가 삭제된 경우")
-    void delete_success_deletedCommentWrtier() {
+    void delete_success_deletedCommentWriter() {
         // given
         Long boardId = 1L;
 
@@ -599,6 +599,7 @@ class PostServiceTest {
 
         // then
         assertThat(post.getDeletedAt()).isNotNull();
+        assertThat(comment.getDeletedAt()).isNotNull();
     }
 
     @Test
