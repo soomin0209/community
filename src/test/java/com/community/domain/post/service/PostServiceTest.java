@@ -294,8 +294,8 @@ class PostServiceTest {
     @DisplayName("게시물 목록 조회 성공")
     void getAll_success() {
         // given
-        Pageable pageable = PageRequest.of(0, 20);
         PostPageCondition condition = new PostPageCondition();
+        Pageable pageable = PageRequest.of(condition.getPage(), condition.getSize());
 
         GetAllPostsResponse post1 = new GetAllPostsResponse(
                 1L, 1L, "오늘 날씨 정말 좋네요!", "브론즈유저", PostType.GENERAL,
