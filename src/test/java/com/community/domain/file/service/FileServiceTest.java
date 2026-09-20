@@ -650,7 +650,7 @@ class FileServiceTest {
         // given
         Long userId = 1L;
 
-        File file = File.register(userId, "테스트 파일.txt", "uploads/2026/09/18/uuid1", 1000L, "text/plain");
+        File file = File.register(userId, "테스트 파일.txt", "uploads/2026/09/18/uuid", 1000L, "text/plain");
         ReflectionTestUtils.setField(file, "id", 1L);
 
         Path path = Paths.get(file.getStoredPath());
@@ -675,7 +675,7 @@ class FileServiceTest {
         // given
         Long userId = 1L;
 
-        File file = File.register(userId, "테스트 파일.txt", "uploads/2026/09/18/uuid1", 1000L, "text/plain");
+        File file = File.register(userId, "테스트 파일.txt", "uploads/2026/09/18/uuid", 1000L, "text/plain");
         ReflectionTestUtils.setField(file, "id", 1L);
 
         Path path = Paths.get(file.getStoredPath());
@@ -700,7 +700,7 @@ class FileServiceTest {
         // given
         Long userId = 1L;
 
-        File file = File.register(userId, "테스트 파일.txt", "uploads/2026/09/18/uuid1", 1000L, "text/plain");
+        File file = File.register(userId, "테스트 파일.txt", "uploads/2026/09/18/uuid", 1000L, "text/plain");
         ReflectionTestUtils.setField(file, "id", 1L);
 
         Path path = Paths.get(file.getStoredPath());
@@ -715,6 +715,7 @@ class FileServiceTest {
             fileService.delete(userId, file.getId());
         }
 
+        // then
         assertThat(file.getDeletedAt()).isNotNull();
     }
 
@@ -738,7 +739,7 @@ class FileServiceTest {
         // given
         Long userId = 1L;
 
-        File file = File.register(2L, "테스트 파일.txt", "uploads/2026/09/18/uuid1", 1000L, "text/plain");
+        File file = File.register(2L, "테스트 파일.txt", "uploads/2026/09/18/uuid", 1000L, "text/plain");
         ReflectionTestUtils.setField(file, "id", 1L);
 
         given(fileRepository.findByIdAndDeletedAtIsNull(file.getId())).willReturn(Optional.of(file));
