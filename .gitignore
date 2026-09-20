@@ -40,3 +40,4 @@ out/
 CLAUDE.md
 uploads
 *test*.sql
+.DS_Store
