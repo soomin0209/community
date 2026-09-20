@@ -33,10 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         boolean isValid = token != null && jwtProvider.validateAccessToken(token);
         boolean blacklisted = true;
+        Long userId = null;
 
         if (isValid) {
             try {
-                Long userId = jwtProvider.getUserId(token);
+                userId = jwtProvider.getUserId(token);
 
                 boolean tokenBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
                 boolean userBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_ALL_PREFIX + userId));
@@ -50,8 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (isValid && !blacklisted) {
             request.setAttribute("accessToken", token);
-
-            Long userId = jwtProvider.getUserId(token);
 
             if (!userRepository.existsByIdAndDeletedAtIsNull(userId)) {
                 filterChain.doFilter(request, response);

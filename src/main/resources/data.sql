@@ -1,19 +1,30 @@
 -- 1. 사용자 데이터
 -- 비밀번호는 모두 "password123@" (BCrypt 암호화)
-INSERT INTO users (id, login_id, nickname, password, role, visit_count, post_count, comment_count, suspended_at, suspended_by, suspended_reason, suspension_day, created_at, updated_at, deleted_at, deleted_by) VALUES
+INSERT INTO users (id, login_id, nickname, password, role, visit_count, post_count, comment_count, suspended_until, created_at, updated_at, deleted_at, deleted_by) VALUES
 -- 일반 회원 (BRONZE, SILVER, GOLD)
-(1, 'bronze_user', '브론즈유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'BRONZE', 5, 2, 5, NULL, NULL, NULL, 0, '2026-09-01 10:00:00', '2026-09-01 10:00:00', NULL, NULL),
-(2, 'silver_user', '실버유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'SILVER', 15, 5, 12, NULL, NULL, NULL, 0, '2026-08-25 10:00:00', '2026-08-25 10:00:00', NULL, NULL),
-(3, 'gold_user', '골드유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'GOLD', 35, 12, 35, NULL, NULL, NULL, 0, '2026-08-15 10:00:00', '2026-08-15 10:00:00', NULL, NULL),
+(1, 'bronze_user', '브론즈유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'BRONZE', 5, 2, 5, NULL, '2026-09-01 10:00:00', '2026-09-01 10:00:00', NULL, NULL),
+(2, 'silver_user', '실버유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'SILVER', 15, 5, 12, NULL, '2026-08-25 10:00:00', '2026-08-25 10:00:00', NULL, NULL),
+(3, 'gold_user', '골드유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'GOLD', 35, 12, 35, NULL, '2026-08-15 10:00:00', '2026-08-15 10:00:00', NULL, NULL),
 -- 운영진
-(4, 'manager', '매니저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'MANAGER', 100, 50, 100, NULL, NULL, NULL, 0, '2026-07-01 10:00:00', '2026-07-01 10:00:00', NULL, NULL),
-(5, 'admin', '관리자', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'ADMIN', 200, 80, 150, NULL, NULL, NULL, 0, '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL, NULL),
--- 정지된 회원
-(6, 'suspended_user', '정지된유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'BRONZE', 3, 1, 0, '2026-09-07 14:00:00', 4, '욕설 및 부적절한 게시물 작성', 7, '2026-09-05 10:00:00', '2026-09-07 14:00:00', NULL, NULL),
+(4, 'manager', '매니저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'MANAGER', 100, 50, 100, NULL, '2026-07-01 10:00:00', '2026-07-01 10:00:00', NULL, NULL),
+(5, 'admin', '관리자', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'ADMIN', 200, 80, 150, NULL, '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL, NULL),
+-- 정지된 회원 (2026-09-14 10:00 ~ 7일 정지 -> 2026-09-21 10:00까지 활성 정지, 오늘 2026-09-16 기준 정지 중)
+(6, 'suspended_user', '정지된유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'BRONZE', 3, 1, 0, '2026-09-21 10:00:00', '2026-09-05 10:00:00', '2026-09-14 10:00:00', NULL, NULL),
 -- 탈퇴한 회원
-(7, 'deleted_user', '탈퇴한유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'BRONZE', 10, 3, 8, NULL, NULL, NULL, 0, '2026-08-20 10:00:00', '2026-09-01 15:00:00', '2026-09-01 15:00:00', NULL);
+(7, 'deleted_user', '탈퇴한유저', '$2a$12$PS0wXUMabHcAVn2wbSxgXe2wFavAt068BSsW36HATsSj1fFYJbGHy', 'BRONZE', 10, 3, 8, NULL, '2026-08-20 10:00:00', '2026-09-01 15:00:00', '2026-09-01 15:00:00', NULL);
 
--- 2. 게시판 데이터
+-- 2. 사용자 정지 이력 데이터
+INSERT INTO user_suspensions (id, user_id, suspended_by, reason, day, is_permanent, suspended_at, unsuspended_by, unsuspended_at) VALUES
+-- suspended_user: 과거 1차 정지 (이미 해제됨, 누적 정지 흐름 예시)
+(1, 6, 4, '커뮤니티 가이드라인 위반', 2, FALSE, '2026-09-01 10:00:00', 4, '2026-09-03 10:00:00'),
+-- suspended_user: 현재 활성 정지 (users.suspended_until = 2026-09-21 10:00:00 과 동기화)
+(2, 6, 4, '욕설 및 부적절한 게시물 작성', 7, FALSE, '2026-09-14 10:00:00', NULL, NULL),
+-- bronze_user: 과거 정지 이력 (이미 해제됨, 현재는 정지 아님)
+(3, 1, 5, '스팸성 게시물 반복 작성', 3, FALSE, '2026-08-01 09:00:00', 4, '2026-08-04 09:00:00'),
+-- silver_user: 영구정지 오판정 후 당일 관리자가 직접 해제한 케이스
+(4, 2, 5, '커뮤니티 운영 방해 행위 (오판정)', NULL, TRUE, '2026-07-10 09:00:00', 5, '2026-07-10 15:00:00');
+
+-- 3. 게시판 데이터
 INSERT INTO boards (id, name, min_role, created_at, updated_at) VALUES
 (1, '자유게시판', NULL, '2026-06-01 09:00:00', '2026-06-01 09:00:00'),
 (2, '질문게시판', NULL, '2026-06-01 09:00:00', '2026-06-01 09:00:00'),
@@ -21,7 +32,7 @@ INSERT INTO boards (id, name, min_role, created_at, updated_at) VALUES
 (4, '자료실', 'SILVER', '2026-06-01 09:00:00', '2026-06-01 09:00:00'),
 (5, '운영게시판', 'MANAGER', '2026-06-01 09:00:00', '2026-06-01 09:00:00');
 
--- 3. 게시물 데이터
+-- 4. 게시물 데이터
 INSERT INTO posts (id, user_id, board_id, title, content, type, view_count, is_pinned, pinned_at, created_at, updated_at, deleted_at, deleted_by) VALUES
 -- 고정 공지글
 (1, 5, 3, '[필독] 커뮤니티 이용 규칙', '커뮤니티 이용 시 지켜주셔야 할 규칙입니다.\n1. 상호 존중\n2. 욕설 및 비방 금지\n3. 저작권 침해 금지', 'NOTICE', 250, TRUE, '2026-06-01 10:00:00', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL, NULL),
@@ -41,7 +52,7 @@ INSERT INTO posts (id, user_id, board_id, title, content, type, view_count, is_p
 (10, 4, 5, '[운영] 9월 회원 정지 처리 내역', '9월 1주차 회원 정지 처리 현황입니다.\n\n- suspended_user: 욕설 및 부적절한 게시물 작성 (7일 정지)\n- 처리일: 2026-09-07\n- 처리자: manager\n\n추가 조치 필요 시 댓글 남겨주세요.','GENERAL', 8, FALSE, NULL, '2026-09-07 15:00:00', '2026-09-07 15:00:00', NULL, NULL),
 (11, 5, 5, '[안건] 게시판 운영 정책 개선 논의', '최근 자유게시판에 질문글이 많이 올라오고 있습니다.\n\n개선 방안:\n1. 게시판별 가이드라인 명확화\n2. 부적절한 게시판 작성 시 이동 안내\n3. 신고 기능 강화\n\n의견 있으시면 댓글로 남겨주세요.', 'GENERAL', 12, FALSE, NULL, '2026-09-06 10:00:00', '2026-09-06 10:00:00', NULL, NULL);
 
--- 4. 댓글 데이터
+-- 5. 댓글 데이터
 INSERT INTO comments (id, post_id, user_id, parent_id, content, depth, created_at, updated_at, deleted_at, deleted_by) VALUES
 -- 게시물 3번의 댓글
 (1, 3, 2, NULL, '맞아요! 산책하기 딱 좋은 날씨네요 ㅎㅎ', 0, '2026-09-08 08:45:00', '2026-09-08 08:45:00', NULL, NULL),
@@ -61,7 +72,7 @@ INSERT INTO comments (id, post_id, user_id, parent_id, content, depth, created_a
 -- 삭제된 댓글
 (12, 3, 6, NULL, '부적절한 댓글...', 0, '2026-09-07 13:30:00', '2026-09-07 14:00:00', '2026-09-07 14:00:00', 4);
 
--- 5. 반응 데이터
+-- 6. 반응 데이터
 INSERT INTO reactions (id, post_id, user_id, type) VALUES
 -- 게시물 1번 (공지)
 (1, 1, 1, 'LIKE'),
@@ -82,6 +93,7 @@ INSERT INTO reactions (id, post_id, user_id, type) VALUES
 
 -- Auto Increment 값 재설정 (다음 ID부터 시작)
 ALTER TABLE users AUTO_INCREMENT = 8;
+ALTER TABLE user_suspensions AUTO_INCREMENT = 5;
 ALTER TABLE boards AUTO_INCREMENT = 6;
 ALTER TABLE posts AUTO_INCREMENT = 12;
 ALTER TABLE comments AUTO_INCREMENT = 13;
