@@ -385,7 +385,7 @@ class AuthServiceTest {
         // then
         verify(valueOperations).set(
                 BLACKLIST_ALL_PREFIX + userId,
-                "true",
+                "update_role",
                 Duration.ofMillis(1800000L)
         );
     }
@@ -422,7 +422,7 @@ class AuthServiceTest {
         verify(redisTemplate).delete(REFRESH_TOKEN_PREFIX + userId);
         verify(valueOperations).set(
                 BLACKLIST_ALL_PREFIX + userId,
-                "true",
+                "force_withdraw",
                 Duration.ofMillis(1800000L)
         );
     }

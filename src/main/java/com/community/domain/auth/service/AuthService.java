@@ -130,6 +130,7 @@ public class AuthService {
         long ttl = jwtProvider.getRemainingTtl(accessToken);
         try {
             redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+
             redisTemplate.opsForValue().set(
                     BLACKLIST_PREFIX + accessToken,
                     "logout",
@@ -141,12 +142,35 @@ public class AuthService {
         }
     }
 
+    // 회원 탈퇴
+    public void withdraw(Long userId, String accessToken) {
+        long ttl = jwtProvider.getRemainingTtl(accessToken);
+        try {
+            redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_PREFIX + accessToken,
+                    "withdraw",
+                    Duration.ofMillis(ttl)
+            );
+
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_ALL_PREFIX + userId,
+                    "withdraw",
+                    Duration.ofMillis(accessTokenExpireTime)
+            );
+        } catch (Exception e) {
+            log.error("[AuthService] Redis Withdraw 처리 실패 - userId={}, msg={}", userId, e.getMessage());
+            throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
+        }
+    }
+
     // 권한 변경용 - refreshToken 유지
     public void invalidateAccessToken(Long userId) {
         try {
             redisTemplate.opsForValue().set(
                     BLACKLIST_ALL_PREFIX + userId,
-                    "true",
+                    "update_role",
                     Duration.ofMillis(accessTokenExpireTime)
             );
         } catch (Exception e) {
@@ -161,7 +185,7 @@ public class AuthService {
 
             redisTemplate.opsForValue().set(
                     BLACKLIST_ALL_PREFIX + userId,
-                    "true",
+                    "force_withdraw",
                     Duration.ofMillis(accessTokenExpireTime)
             );
         } catch (Exception e) {
