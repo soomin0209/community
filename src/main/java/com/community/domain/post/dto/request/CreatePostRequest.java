@@ -2,11 +2,15 @@ package com.community.domain.post.dto.request;
 
 import com.community.domain.post.enums.PostType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
 public record CreatePostRequest(
+        @NotNull(message = "게시판 아이디를 입력해주세요")
+        @Positive(message = "게시판 아이디는 1 이상이어야 합니다")
         Long boardId,
 
         @NotBlank(message = "제목을 입력해주세요")
