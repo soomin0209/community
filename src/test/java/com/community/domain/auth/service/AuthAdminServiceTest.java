@@ -74,7 +74,7 @@ class AuthAdminServiceTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 아이디 중복")
+    @DisplayName("관리자 회원가입 실패 - 아이디 중복")
     void signup_fail_duplicateLoginId() {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin", "관리자", "password", "adminsecretkey");
@@ -88,7 +88,7 @@ class AuthAdminServiceTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 닉네임 중복")
+    @DisplayName("관리자 회원가입 실패 - 닉네임 중복")
     void signup_fail_duplicateNickname() {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin", "관리자", "password", "adminsecretkey");

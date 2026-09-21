@@ -66,7 +66,7 @@ class AuthAdminControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 아이디 공백")
+    @DisplayName("관리자 회원가입 실패 - 아이디 공백")
     void signup_fail_LoginIdIsNull() throws Exception {
         // given
         AdminSignupRequest request = new AdminSignupRequest(null, "관리자", "password123@", "adminsecretkey");
@@ -81,7 +81,7 @@ class AuthAdminControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 아이디 형식 불일치")
+    @DisplayName("관리자 회원가입 실패 - 아이디 형식 불일치")
     void signup_fail_invalidLoginId() throws Exception {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin", "관리자", "password123@", "adminsecretkey");
@@ -96,7 +96,7 @@ class AuthAdminControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 닉네임 공백")
+    @DisplayName("관리자 회원가입 실패 - 닉네임 공백")
     void signup_fail_nicknameIsNull() throws Exception {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin123", null, "password123@", "adminsecretkey");
@@ -111,7 +111,7 @@ class AuthAdminControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 닉네임 형식 불일치")
+    @DisplayName("관리자 회원가입 실패 - 닉네임 형식 불일치")
     void signup_fail_invalidNickname() throws Exception {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin123", "a", "password123@", "adminsecretkey");
@@ -126,7 +126,7 @@ class AuthAdminControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 비밀번호 공백")
+    @DisplayName("관리자 회원가입 실패 - 비밀번호 공백")
     void signup_fail_passwordIsNull() throws Exception {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin123", "관리자", null, "adminsecretkey");
@@ -141,7 +141,7 @@ class AuthAdminControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 비밀번호 형식 불일치")
+    @DisplayName("관리자 회원가입 실패 - 비밀번호 형식 불일치")
     void signup_fail_invalidPassword() throws Exception {
         // given
         AdminSignupRequest request = new AdminSignupRequest("admin123", "관리자", "password", "adminsecretkey");
