@@ -137,6 +137,6 @@ public class UserService {
                 () -> new ServiceErrorException(UserExceptionEnum.USER_NOT_FOUND));
 
         user.delete();
-        authService.logout(userId, accessToken);
+        authService.withdraw(userId, accessToken);
     }
 }
