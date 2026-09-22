@@ -9,7 +9,6 @@ import com.community.domain.post.dto.response.MovePostResponse;
 import com.community.domain.post.dto.response.PinPostResponse;
 import com.community.domain.post.enums.PostType;
 import com.community.domain.post.service.PostManagerService;
-import com.community.domain.post.service.PostService;
 import com.community.domain.user.enums.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

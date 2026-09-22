@@ -6,7 +6,6 @@ import com.community.common.config.web.UserVisitInterceptor;
 import com.community.common.config.web.WebMvcConfig;
 import com.community.common.dto.CursorResponse;
 import com.community.common.dto.PageResponse;
-import com.community.common.exception.GlobalExceptionHandler;
 import com.community.domain.comment.dto.request.CreateCommentRequest;
 import com.community.domain.comment.dto.request.UpdateCommentRequest;
 import com.community.domain.comment.dto.response.CreateCommentResponse;

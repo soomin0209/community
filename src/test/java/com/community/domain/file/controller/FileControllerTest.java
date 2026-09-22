@@ -4,7 +4,6 @@ import com.community.common.config.security.CustomUserDetails;
 import com.community.common.config.web.SuspendedCheckInterceptor;
 import com.community.common.config.web.UserVisitInterceptor;
 import com.community.common.config.web.WebMvcConfig;
-import com.community.common.exception.GlobalExceptionHandler;
 import com.community.domain.file.dto.response.DownloadFileResponse;
 import com.community.domain.file.dto.response.UploadFileResponse;
 import com.community.domain.file.service.FileService;

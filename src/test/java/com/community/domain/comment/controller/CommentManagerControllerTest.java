@@ -4,7 +4,6 @@ import com.community.common.config.security.CustomUserDetails;
 import com.community.common.config.web.SuspendedCheckInterceptor;
 import com.community.common.config.web.UserVisitInterceptor;
 import com.community.common.config.web.WebMvcConfig;
-import com.community.common.exception.GlobalExceptionHandler;
 import com.community.domain.comment.service.CommentManagerService;
 import com.community.domain.user.enums.UserRole;
 import org.junit.jupiter.api.DisplayName;

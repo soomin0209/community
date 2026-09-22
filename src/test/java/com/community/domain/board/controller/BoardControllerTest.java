@@ -3,7 +3,6 @@ package com.community.domain.board.controller;
 import com.community.common.config.web.SuspendedCheckInterceptor;
 import com.community.common.config.web.UserVisitInterceptor;
 import com.community.common.config.web.WebMvcConfig;
-import com.community.common.exception.GlobalExceptionHandler;
 import com.community.domain.board.dto.response.GetAllBoardResponse;
 import com.community.domain.board.service.BoardService;
 import org.junit.jupiter.api.DisplayName;
