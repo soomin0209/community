@@ -267,8 +267,8 @@ class CommentControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/comments/{commentId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.content").value("댓글 수정"));
@@ -282,8 +282,8 @@ class CommentControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/comments/{commentId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("수정할 내용이 없습니다"));
