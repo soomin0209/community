@@ -370,6 +370,53 @@ class AuthServiceTest {
     }
 
 
+    // ========== 회원 탈퇴 ==========
+    @Test
+    @DisplayName("회원 탈퇴 성공")
+    void withdraw_success() {
+        // given
+        Long userId = 1L;
+        String accessToken = "accessToken";
+        long remainingTtl = 1000L;
+
+        given(jwtProvider.getRemainingTtl(accessToken)).willReturn(remainingTtl);
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+
+        // when
+        authService.withdraw(userId, accessToken);
+
+        // then
+        verify(redisTemplate).delete(REFRESH_TOKEN_PREFIX + userId);
+        verify(valueOperations).set(
+                BLACKLIST_PREFIX + accessToken,
+                "withdraw",
+                Duration.ofMillis(remainingTtl)
+        );
+        verify(valueOperations).set(
+                BLACKLIST_ALL_PREFIX + userId,
+                "withdraw",
+                Duration.ofMillis(1800000L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - Redis 토큰 삭제 실패")
+    void withdraw_fail_redisTokenDeleteFail() {
+        // given
+        Long userId = 1L;
+        String accessToken = "accessToken";
+        long remainingTtl = 1000L;
+
+        given(jwtProvider.getRemainingTtl(accessToken)).willReturn(remainingTtl);
+        given(redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId)).willThrow(new RuntimeException("Redis connection failed"));
+
+        // when & then
+        assertThatThrownBy(() -> authService.withdraw(userId, accessToken))
+                .isInstanceOf(ServiceErrorException.class)
+                .hasMessage(CommonExceptionEnum.REDIS_CONNECTION_ERROR.getMessage());
+    }
+
+
     // ========== 권한 변경용 토큰 만료 ==========
     @Test
     @DisplayName("권한 변경용 토큰 만료 성공")

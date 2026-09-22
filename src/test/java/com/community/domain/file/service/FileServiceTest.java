@@ -68,8 +68,8 @@ class FileServiceTest {
     @DisplayName("파일 업로드 성공")
     void upload_success() {
         // given
-        MockMultipartFile file1 = new MockMultipartFile("file1", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file2 = new MockMultipartFile("file2", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file1 = new MockMultipartFile("files", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file2 = new MockMultipartFile("files", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
         List<MultipartFile> files = List.of(file1, file2);
 
         // when
@@ -85,7 +85,7 @@ class FileServiceTest {
     @DisplayName("파일 업로드 성공 - 빈 파일")
     void upload_success_filesIsEmpty() {
         // given
-        MockMultipartFile emptyFile = new MockMultipartFile("file", "", "text/plain", new byte[0]);
+        MockMultipartFile emptyFile = new MockMultipartFile("files", "", "text/plain", new byte[0]);
         List<MultipartFile> files = List.of(emptyFile);
 
         // when
@@ -99,17 +99,17 @@ class FileServiceTest {
     @DisplayName("파일 업로드 실패 - 파일 개수 초과")
     void upload_fail_countExceeded() {
         // given
-        MockMultipartFile file1 = new MockMultipartFile("file1", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file2 = new MockMultipartFile("file2", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file3 = new MockMultipartFile("file3", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file4 = new MockMultipartFile("file4", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file5 = new MockMultipartFile("file5", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file6 = new MockMultipartFile("file6", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file7 = new MockMultipartFile("file7", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file8 = new MockMultipartFile("file8", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file9 = new MockMultipartFile("file9", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file10 = new MockMultipartFile("file10", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
-        MockMultipartFile file11 = new MockMultipartFile("file11", "테스트 파일.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file1 = new MockMultipartFile("files", "테스트 파일1.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file2 = new MockMultipartFile("files", "테스트 파일2.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file3 = new MockMultipartFile("files", "테스트 파일3.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file4 = new MockMultipartFile("files", "테스트 파일4.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file5 = new MockMultipartFile("files", "테스트 파일5.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file6 = new MockMultipartFile("files", "테스트 파일6.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file7 = new MockMultipartFile("files", "테스트 파일7.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file8 = new MockMultipartFile("files", "테스트 파일8.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file9 = new MockMultipartFile("files", "테스트 파일9.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file10 = new MockMultipartFile("files", "테스트 파일10.txt", "text/plain", "테스트 파일 내용".getBytes());
+        MockMultipartFile file11 = new MockMultipartFile("files", "테스트 파일11.txt", "text/plain", "테스트 파일 내용".getBytes());
         List<MultipartFile> files = List.of(file1, file2, file3, file4, file5, file6, file7, file8, file9, file10, file11);
 
         // when & then
@@ -122,7 +122,7 @@ class FileServiceTest {
     @DisplayName("파일 업로드 실패 - 파일 크기 초과")
     void upload_fail_sizeExceeded() {
         // given
-        MockMultipartFile file = new MockMultipartFile("file", "테스트 파일.txt", "text/plain", new byte[(int) FILE_MAX_SIZE + 1]);
+        MockMultipartFile file = new MockMultipartFile("files", "테스트 파일.txt", "text/plain", new byte[(int) FILE_MAX_SIZE + 1]);
         List<MultipartFile> files = List.of(file);
 
         // when & then
@@ -135,7 +135,7 @@ class FileServiceTest {
     @DisplayName("파일 업로드 실패 - 차단된 확장자")
     void upload_fail_blockedExtension() {
         // given
-        MockMultipartFile file = new MockMultipartFile("file", "실행 파일.exe", "application/octet-stream", "테스트 파일 내용".getBytes());
+        MockMultipartFile file = new MockMultipartFile("files", "실행 파일.exe", "application/octet-stream", "테스트 파일 내용".getBytes());
         List<MultipartFile> files = List.of(file);
 
         // when & then
@@ -148,7 +148,7 @@ class FileServiceTest {
     @DisplayName("파일 업로드 실패 - 허용되지 않은 확장자")
     void upload_fail_invalidExtension() {
         // given
-        MockMultipartFile file = new MockMultipartFile("file", "테스트.xyz", "application/octet-stream", "테스트 파일 내용".getBytes());
+        MockMultipartFile file = new MockMultipartFile("files", "테스트.xyz", "application/octet-stream", "테스트 파일 내용".getBytes());
         List<MultipartFile> files = List.of(file);
 
         // when & then
@@ -161,7 +161,7 @@ class FileServiceTest {
     @DisplayName("파일 업로드 실패 - 확장자명 없음")
     void upload_fail_noExtension() {
         // given
-        MockMultipartFile file = new MockMultipartFile("file", "확장자없음", "application/octet-stream", "테스트 파일 내용".getBytes());
+        MockMultipartFile file = new MockMultipartFile("files", "확장자없음", "application/octet-stream", "테스트 파일 내용".getBytes());
         List<MultipartFile> files = List.of(file);
 
         // when & then
