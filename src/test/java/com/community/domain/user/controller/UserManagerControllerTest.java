@@ -10,7 +10,6 @@ import com.community.domain.user.dto.response.SuspendUserResponse;
 import com.community.domain.user.dto.response.UpdateUserRoleResponse;
 import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.service.UserManagerService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +53,6 @@ class UserManagerControllerTest {
 
     @MockitoBean
     private UserManagerService userManagerService;
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
 
 
     // ========== 회원 등급 변경 ==========
