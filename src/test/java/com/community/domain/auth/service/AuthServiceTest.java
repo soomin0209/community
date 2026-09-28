@@ -30,8 +30,7 @@ import java.util.Optional;
 import static com.community.common.constant.AppConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
@@ -393,9 +392,9 @@ class AuthServiceTest {
                 Duration.ofMillis(remainingTtl)
         );
         verify(valueOperations).set(
-                BLACKLIST_ALL_PREFIX + userId,
-                "withdraw",
-                Duration.ofMillis(1800000L)
+                eq(BLACKLIST_ALL_PREFIX + userId),
+                anyString(),
+                eq(Duration.ofMillis(1800000L))
         );
     }
 
@@ -431,9 +430,9 @@ class AuthServiceTest {
 
         // then
         verify(valueOperations).set(
-                BLACKLIST_ALL_PREFIX + userId,
-                "update_role",
-                Duration.ofMillis(1800000L)
+                eq(BLACKLIST_ALL_PREFIX + userId),
+                anyString(),
+                eq(Duration.ofMillis(1800000L))
         );
     }
 
@@ -446,7 +445,7 @@ class AuthServiceTest {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
         willThrow(new RuntimeException("Redis connection failed"))
                 .given(valueOperations)
-                .set(eq(BLACKLIST_ALL_PREFIX + userId), eq("true"), any(Duration.class));
+                .set(eq(BLACKLIST_ALL_PREFIX + userId), anyString(), any(Duration.class));
 
         // when & then
         authService.invalidateAccessToken(userId);
@@ -468,9 +467,9 @@ class AuthServiceTest {
         // then
         verify(redisTemplate).delete(REFRESH_TOKEN_PREFIX + userId);
         verify(valueOperations).set(
-                BLACKLIST_ALL_PREFIX + userId,
-                "force_withdraw",
-                Duration.ofMillis(1800000L)
+                eq(BLACKLIST_ALL_PREFIX + userId),
+                anyString(),
+                eq(Duration.ofMillis(1800000L))
         );
     }
 
@@ -483,7 +482,7 @@ class AuthServiceTest {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
         willThrow(new RuntimeException("Redis connection failed"))
                 .given(valueOperations)
-                .set(eq(BLACKLIST_ALL_PREFIX + userId), eq("true"), any(Duration.class));
+                .set(eq(BLACKLIST_ALL_PREFIX + userId), anyString(), any(Duration.class));
 
         // when & then
         authService.invalidateAllTokens(userId);

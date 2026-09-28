@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import static com.community.common.constant.AppConstants.*;
 
@@ -154,11 +155,7 @@ public class AuthService {
                     Duration.ofMillis(ttl)
             );
 
-            redisTemplate.opsForValue().set(
-                    BLACKLIST_ALL_PREFIX + userId,
-                    "withdraw",
-                    Duration.ofMillis(accessTokenExpireTime)
-            );
+            invalidateTokensIssuedBefore(userId);
         } catch (Exception e) {
             log.error("[AuthService] Redis Withdraw 처리 실패 - userId={}, msg={}", userId, e.getMessage());
             throw new ServiceErrorException(CommonExceptionEnum.REDIS_CONNECTION_ERROR);
@@ -168,11 +165,7 @@ public class AuthService {
     // 권한 변경용 - refreshToken 유지
     public void invalidateAccessToken(Long userId) {
         try {
-            redisTemplate.opsForValue().set(
-                    BLACKLIST_ALL_PREFIX + userId,
-                    "update_role",
-                    Duration.ofMillis(accessTokenExpireTime)
-            );
+            invalidateTokensIssuedBefore(userId);
         } catch (Exception e) {
             log.warn("[AuthService] Redis Access Token 무효화 실패 - userId={}, msg={}", userId, e.getMessage());
         }
@@ -183,13 +176,17 @@ public class AuthService {
         try {
             redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
 
-            redisTemplate.opsForValue().set(
-                    BLACKLIST_ALL_PREFIX + userId,
-                    "force_withdraw",
-                    Duration.ofMillis(accessTokenExpireTime)
-            );
+            invalidateTokensIssuedBefore(userId);
         } catch (Exception e) {
             log.warn("[AuthService] Redis 모든 토큰 무효화 실패 - userId={}, msg={}", userId, e.getMessage());
         }
+    }
+
+    private void invalidateTokensIssuedBefore(Long userId) {
+        redisTemplate.opsForValue().set(
+                BLACKLIST_ALL_PREFIX + userId,
+                String.valueOf(Instant.now().getEpochSecond()),
+                Duration.ofMillis(accessTokenExpireTime)
+        );
     }
 }
