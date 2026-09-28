@@ -80,10 +80,6 @@ class FileIntegrationTest {
         for (Path path : uploadedPaths) {
             Files.deleteIfExists(path);
         }
-
-        List.of(MANAGER_LOGIN_ID, USER_LOGIN_ID, WRITER_LOGIN_ID).forEach(loginId ->
-                userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
-                        .ifPresent(u -> userRepository.delete(u)));
     }
 
 

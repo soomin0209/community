@@ -7,7 +7,7 @@ import com.community.domain.auth.exception.AuthExceptionEnum;
 import com.community.domain.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,17 +38,8 @@ class AuthIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private UserRepository userRepository;
-
     private static final String LOGIN_ID = "testlogin123";
     private static final String PASSWORD = "password123@";
-
-    @AfterEach
-    void cleanUp() {
-        userRepository.findByLoginIdAndDeletedAtIsNull(LOGIN_ID)
-                .ifPresent(u -> userRepository.delete(u));
-    }
 
 
     // ========== Idempotency-Key 실동작 ==========

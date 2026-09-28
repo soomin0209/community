@@ -13,7 +13,6 @@ import com.community.domain.reaction.enums.ReactionType;
 import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -61,13 +59,6 @@ class ReactionIntegrationTest {
     private static final String BOARD_NAME = "자유게시판";
     private static final String POST_TITLE = "게시물 제목";
     private static final String POST_CONTENT = "게시물 내용";
-
-    @AfterEach
-    void cleanUp() {
-        List.of(USER_LOGIN_ID, WRITER_LOGIN_ID).forEach(loginId ->
-                userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
-                        .ifPresent(u -> userRepository.delete(u)));
-    }
 
 
     // ========== 실제 Security 필터 체인 ==========

@@ -14,7 +14,6 @@ import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -64,13 +62,6 @@ class BoardIntegrationTest {
     private static final String MANAGER_LOGIN_ID = "manager123";
     private static final String PASSWORD = "password123@";
     private static final String BOARD_NAME = "자유게시판";
-
-    @AfterEach
-    void cleanUp() {
-        List.of(ADMIN_LOGIN_ID, MANAGER_LOGIN_ID).forEach(loginId ->
-                userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
-                        .ifPresent(u -> userRepository.delete(u)));
-    }
 
 
     // ========== 실제 Security 필터 체인 + ROLE_ADMIN 접근 제어 ==========
