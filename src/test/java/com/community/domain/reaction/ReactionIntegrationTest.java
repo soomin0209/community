@@ -10,7 +10,6 @@ import com.community.domain.post.enums.PostType;
 import com.community.domain.post.repository.PostRepository;
 import com.community.domain.reaction.dto.request.ReactionRequest;
 import com.community.domain.reaction.enums.ReactionType;
-import com.community.domain.user.entity.User;
 import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
