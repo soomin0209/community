@@ -8,7 +8,6 @@ import com.community.domain.file.dto.response.DownloadFileResponse;
 import com.community.domain.file.dto.response.UploadFileResponse;
 import com.community.domain.file.service.FileService;
 import com.community.domain.user.enums.UserRole;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +48,6 @@ class FileControllerTest {
 
     @MockitoBean
     private FileService fileService;
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
 
 
     // ========== 파일 업로드 ==========

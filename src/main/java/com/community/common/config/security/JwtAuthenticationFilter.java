@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static com.community.common.constant.AppConstants.BLACKLIST_ALL_PREFIX;
 import static com.community.common.constant.AppConstants.BLACKLIST_PREFIX;
@@ -40,7 +41,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 userId = jwtProvider.getUserId(token);
 
                 boolean tokenBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
-                boolean userBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_ALL_PREFIX + userId));
+
+                Object invalidatedAt = redisTemplate.opsForValue().get(BLACKLIST_ALL_PREFIX + userId);
+                boolean userBlacklisted = isIssuedBeforeInvalidation(token, invalidatedAt);
 
                 blacklisted = tokenBlacklisted || userBlacklisted;
             } catch (Exception e) {
@@ -68,5 +71,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    // 토큰이 무효화 시각 이전에 발급됐는지 확인
+    private boolean isIssuedBeforeInvalidation(String token, Object invalidatedAt) {
+        if (invalidatedAt == null) {
+            return false;
+        }
+
+        try {
+            Date issuedAt = jwtProvider.getIssuedAt(token);
+            Date invalidatedDate = new Date(Long.parseLong(invalidatedAt.toString()) * 1000);
+            return issuedAt.getTime() < invalidatedDate.getTime();
+        } catch (NumberFormatException e) {
+            log.warn("[JwtAuthenticationFilter] blacklist 값 형식 오류 - value={}", invalidatedAt);
+            return true;
+        }
     }
 }

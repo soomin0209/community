@@ -12,7 +12,6 @@ import com.community.domain.post.enums.PostType;
 import com.community.domain.post.service.PostService;
 import com.community.domain.post.service.PostViewService;
 import com.community.domain.user.enums.UserRole;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,11 +58,6 @@ class PostControllerTest {
 
     @MockitoBean
     private PostViewService postViewService;
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
 
 
     // ========== 게시물 등록 ==========

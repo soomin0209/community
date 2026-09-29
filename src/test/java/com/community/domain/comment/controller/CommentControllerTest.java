@@ -14,7 +14,6 @@ import com.community.domain.comment.dto.response.GetMyCommentsResponse;
 import com.community.domain.comment.dto.response.UpdateCommentResponse;
 import com.community.domain.comment.service.CommentService;
 import com.community.domain.user.enums.UserRole;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +56,6 @@ class CommentControllerTest {
 
     @MockitoBean
     private CommentService commentService;
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
 
 
     // ========== 댓글 등록 ==========

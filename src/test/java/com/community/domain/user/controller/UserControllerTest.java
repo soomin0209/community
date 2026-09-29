@@ -11,7 +11,6 @@ import com.community.domain.user.enums.UserRankType;
 import com.community.domain.user.enums.UserRole;
 import com.community.domain.user.service.UserRankingService;
 import com.community.domain.user.service.UserService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,11 +57,6 @@ class UserControllerTest {
 
     @MockitoBean
     private UserRankingService userRankingService;
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
 
 
     // ========== 프로필 조회 ==========

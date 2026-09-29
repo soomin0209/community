@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 import static com.community.common.constant.AppConstants.*;
 
@@ -40,6 +41,7 @@ public class JwtProvider {
     public String createAccessToken(Long userId, String role) {
         Date now = new Date();
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(String.valueOf(userId))
                 .claim("role", role)
                 .claim("tokenType", TOKEN_TYPE_ACCESS)
@@ -52,6 +54,7 @@ public class JwtProvider {
     public String createRefreshToken(Long userId) {
         Date now = new Date();
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(String.valueOf(userId))
                 .claim("tokenType", TOKEN_TYPE_REFRESH)
                 .issuedAt(now)
@@ -66,6 +69,10 @@ public class JwtProvider {
 
     public String getRole(String token) {
         return getClaims(token).get("role", String.class);
+    }
+
+    public Date getIssuedAt(String token) {
+        return getClaims(token).getIssuedAt();
     }
 
     public long getRemainingTtl(String token) {
